@@ -46,11 +46,7 @@ function navClass(active: boolean) {
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="grid h-9 w-9 shrink-0 grid-cols-2 grid-rows-2 overflow-hidden rounded-[10px] shadow-soft ring-1 ring-surface-borderLight">
-        {COLORS.map((c) => (
-          <ColorSquare key={c} color={c} />
-        ))}
-      </div>
+      <img src="./tu-logo.png" alt="TU" className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_0_10px_rgba(242,179,61,0.35)]" />
       <div className="min-w-0 leading-tight">
         <p className="truncate text-sm font-extrabold text-mist-100">TU Sport Day 2026</p>
         <p className="truncate text-[11px] text-mist-500">ระบบสุ่มจับคู่แข่งขันกีฬาสี</p>
@@ -126,9 +122,4 @@ export function Layout({ children }: { children: ReactNode }) {
       </footer>
     </div>
   )
-}
-
-function ColorSquare({ color }: { color: (typeof COLORS)[number] }) {
-  const bg: Record<string, string> = { ฟ้า: '#0284C7', ม่วง: '#9333EA', ชมพู: '#DB2777', เขียว: '#16A34A' }
-  return <span style={{ backgroundColor: bg[color] }} />
 }
