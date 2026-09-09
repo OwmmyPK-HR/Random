@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom'
 import { EVENTS } from '../data/events'
 import { useEventStore } from '../store/EventStoreContext'
 import { formatThaiDateFull } from '../utils/date'
+import { MasterScheduleGrid } from '../components/MasterScheduleGrid'
 import { SPORT_ICON, CalendarIcon, CheckCircleIcon, ClockIcon, MapPinIcon, SearchIcon } from '../components/Icons'
+
+type Tab = 'mine' | 'official'
 
 export function SchedulePage() {
   const { store } = useEventStore()
   const [query, setQuery] = useState('')
+  const [tab, setTab] = useState<Tab>('mine')
 
   const q = query.trim().toLowerCase()
   const matchesQuery = (evName: string, sportGroup: string, venue?: string) =>
@@ -44,6 +48,29 @@ export function SchedulePage() {
         </p>
       </div>
 
+      <div className="inline-flex rounded-xl border border-surface-border bg-surface-card p-1">
+        <button
+          onClick={() => setTab('mine')}
+          className={`rounded-lg px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+            tab === 'mine' ? 'bg-accent text-accent-contrast' : 'text-mist-400 hover:text-mist-100'
+          }`}
+        >
+          ตารางของฉัน
+        </button>
+        <button
+          onClick={() => setTab('official')}
+          className={`rounded-lg px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+            tab === 'official' ? 'bg-accent text-accent-contrast' : 'text-mist-400 hover:text-mist-100'
+          }`}
+        >
+          ตารางหลัก (ทางการ)
+        </button>
+      </div>
+
+      {tab === 'official' ? (
+        <MasterScheduleGrid />
+      ) : (
+        <>
       <div className="relative">
         <SearchIcon size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mist-500" />
         <input
@@ -89,6 +116,8 @@ export function SchedulePage() {
             ))}
           </ul>
         </section>
+      )}
+        </>
       )}
     </div>
   )

@@ -1,4 +1,5 @@
 const THAI_WEEKDAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
+const THAI_WEEKDAYS_ABBR = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
 const THAI_MONTHS = [
   'มกราคม',
   'กุมภาพันธ์',
@@ -47,4 +48,9 @@ export function formatThaiDateShort(iso: string): string {
   if (!d) return iso
   const be = (d.getFullYear() + 543) % 100
   return `${d.getDate()} ${THAI_MONTHS_ABBR[d.getMonth()]} ${be}`
+}
+
+/** ชื่อย่อวันในสัปดาห์ภาษาไทย เช่น "พฤ", "ศ" — รับ JS Date ตรง ๆ (ใช้กับตารางแบบกริดที่คำนวณวันเอง) */
+export function thaiWeekdayAbbr(d: Date): string {
+  return THAI_WEEKDAYS_ABBR[d.getDay()]
 }
