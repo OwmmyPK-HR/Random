@@ -1,9 +1,7 @@
-import { Fragment } from 'react'
 import {
   MASTER_SCHEDULE_FOOTNOTES,
-  MASTER_SCHEDULE_GROUPS,
   MASTER_SCHEDULE_NOTE,
-  MASTER_SCHEDULE_OCT_DAYS,
+  MASTER_SCHEDULE_ROWS,
   type ScheduleCellType,
 } from '../data/masterSchedule'
 import { thaiWeekdayAbbr } from '../utils/date'
@@ -22,6 +20,11 @@ const CELL_LABEL: Record<ScheduleCellType, string> = {
   final: 'F',
   finalAlert: 'F',
 }
+
+// คอลัมน์วัน: ตุลาคม 1-31 ตามด้วยพฤศจิกายน 1-15 (ตรงกับช่วงที่ตารางต้นฉบับระบุไว้)
+const OCT_DAYS = Array.from({ length: 31 }, (_, i) => ({ month: 10 as const, day: i + 1 }))
+const NOV_DAYS = Array.from({ length: 15 }, (_, i) => ({ month: 11 as const, day: i + 1 }))
+const ALL_DAYS = [...OCT_DAYS, ...NOV_DAYS]
 
 function DayCell({ type }: { type?: ScheduleCellType }) {
   if (!type) return <td className="h-8 w-6 border border-surface-border bg-surface-raised/50" />
@@ -42,12 +45,10 @@ function Legend({ swatch, label }: { swatch: string; label: string }) {
 }
 
 /**
- * ตารางการแข่งขันหลัก (ทางการ) — ถอดความจากตารางต้นฉบับที่ได้รับ ครอบคลุมกีฬาทุกประเภทของงาน
- * (ไม่ใช่แค่ 33 รายการที่ระบบนี้จับสลากให้) เป็นข้อมูลอ้างอิงสำหรับดูภาพรวมทั้งงานเท่านั้น
+ * ตารางการแข่งขันหลัก (ทางการ) — ถอดความจากไฟล์ CSV ต้นฉบับที่ได้รับ ครอบคลุมเฉพาะ 7 ประเภทกีฬาที่ระบบนี้จับสลากให้
+ * ช่องที่ทำเครื่องหมายคือวันที่ "มีสิทธิ์แข่งได้" ตามตารางจอง ไม่ใช่ทุกวันจะมีการแข่งจริงเสมอไป
  */
 export function MasterScheduleGrid() {
-  const octDates = MASTER_SCHEDULE_OCT_DAYS.map((d) => new Date(2026, 9, d))
-
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-2 rounded-xl border border-gold-500/30 bg-gold-400/10 p-3 text-xs text-mist-300">
@@ -62,67 +63,63 @@ export function MasterScheduleGrid() {
               <th className="sticky left-0 z-10 min-w-[56px] border border-surface-border bg-surface-sunken px-2 py-1.5 text-left text-[10px] text-mist-400">
                 ลำดับ
               </th>
-              <th className="sticky left-[56px] z-10 min-w-[150px] border border-surface-border bg-surface-sunken px-2 py-1.5 text-left text-[10px] text-mist-400">
+              <th className="sticky left-[56px] z-10 min-w-[130px] border border-surface-border bg-surface-sunken px-2 py-1.5 text-left text-[10px] text-mist-400">
                 กีฬา
               </th>
               <th className="min-w-[170px] border border-surface-border bg-surface-sunken px-2 py-1.5 text-left text-[10px] text-mist-400">
                 สถานที่แข่งขัน
               </th>
-              {octDates.map((d) => (
-                <th key={d.getDate()} className="w-6 border border-surface-border bg-surface-sunken px-0 py-1 text-center">
-                  <div className="text-[8px] leading-none text-mist-500">{thaiWeekdayAbbr(d)}</div>
-                  <div className="text-[10px] font-bold leading-tight text-mist-200">{d.getDate()}</div>
+              {ALL_DAYS.map(({ month, day }, i) => (
+                <th
+                  key={`${month}-${day}`}
+                  className={`w-6 border border-surface-border bg-surface-sunken px-0 py-1 text-center ${
+                    i > 0 && ALL_DAYS[i - 1].month !== month ? 'border-l-2 border-l-accent/40' : ''
+                  }`}
+                >
+                  <div className="text-[8px] leading-none text-mist-500">{thaiWeekdayAbbr(new Date(2026, month - 1, day))}</div>
+                  <div className="text-[10px] font-bold leading-tight text-mist-200">{day}</div>
                 </th>
               ))}
-              <th className="min-w-[52px] border border-surface-border bg-surface-sunken px-1 py-1 text-center text-[9px] text-mist-400">
-                ธ.ค.-69
+            </tr>
+            <tr>
+              <th colSpan={3} className="sticky left-0 z-10 border border-surface-border bg-surface-sunken">
+                <span className="sr-only">รายละเอียดประเภทกีฬา</span>
+              </th>
+              <th colSpan={31} className="border border-surface-border bg-surface-sunken py-0.5 text-[9px] font-bold text-mist-400">
+                ตุลาคม 2569
+              </th>
+              <th colSpan={15} className="border border-surface-border bg-surface-sunken py-0.5 text-[9px] font-bold text-mist-400">
+                พฤศจิกายน 2569
               </th>
             </tr>
           </thead>
           <tbody>
-            {MASTER_SCHEDULE_GROUPS.map((group) => (
-              <Fragment key={group.title}>
-                <tr>
-                  <td
-                    colSpan={MASTER_SCHEDULE_OCT_DAYS.length + 4}
-                    className="border border-surface-border bg-surface-raised px-2 py-1 text-[11px] font-bold text-mist-200"
-                  >
-                    {group.title}
+            {MASTER_SCHEDULE_ROWS.map((row) => {
+              const cellMap = new Map(row.cells.map((c) => [`${c.month}-${c.day}`, c.type]))
+              return (
+                <tr key={row.no}>
+                  <td className="sticky left-0 z-10 border border-surface-border bg-surface-card px-2 py-1 text-[10px] text-mist-500">
+                    {row.no}
                   </td>
+                  <td className="sticky left-[56px] z-10 border border-surface-border bg-surface-card px-2 py-1 font-semibold text-mist-100">
+                    {row.sport}
+                  </td>
+                  <td className="border border-surface-border px-2 py-1 text-mist-400">{row.venue}</td>
+                  {ALL_DAYS.map(({ month, day }) => (
+                    <DayCell key={`${month}-${day}`} type={cellMap.get(`${month}-${day}`)} />
+                  ))}
                 </tr>
-                {group.rows.map((row) => (
-                  <tr key={row.no}>
-                    <td className="sticky left-0 z-10 border border-surface-border bg-surface-card px-2 py-1 text-[10px] text-mist-500">
-                      {row.no}
-                    </td>
-                    <td className="sticky left-[56px] z-10 border border-surface-border bg-surface-card px-2 py-1 font-semibold text-mist-100">
-                      {row.sport}
-                    </td>
-                    <td className="border border-surface-border px-2 py-1 text-mist-400">{row.venue || '—'}</td>
-                    {MASTER_SCHEDULE_OCT_DAYS.map((d) => (
-                      <DayCell key={d} type={row.cells[d]} />
-                    ))}
-                    <td
-                      className={`h-8 w-[52px] border border-surface-border text-center text-[10px] font-extrabold ${
-                        row.dec ? 'bg-[#F4E7C8] text-[#6B4E0E]' : 'bg-surface-raised/50'
-                      }`}
-                    >
-                      {row.dec?.label ?? ''}
-                    </td>
-                  </tr>
-                ))}
-              </Fragment>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-mist-500">
-        <Legend swatch="bg-team-green/70" label="วันแข่งขัน" />
+        <Legend swatch="bg-team-green/70" label="วันที่มีสิทธิ์แข่งได้" />
         <Legend swatch="bg-gold-400" label='ชิงอันดับ 3 ("3rd")' />
         <Legend swatch="bg-team-blue/80" label='รอบชิงชนะเลิศ ("F")' />
         <Legend swatch="bg-orange-400" label="รอบชิงฟุตซอล (อาจเปลี่ยนวัน)" />
-        <Legend swatch="bg-[#F4E7C8]" label="กีฬาพื้นบ้าน/งานเลี้ยง (18 ธ.ค.)" />
       </div>
       <ul className="list-disc space-y-1 pl-5 text-[11px] leading-relaxed text-mist-500">
         {MASTER_SCHEDULE_FOOTNOTES.map((f) => (
