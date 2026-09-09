@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ResultBoard } from '../components/ResultBoard'
 import { ColorBracketView, UnitBracketView } from '../components/BracketView'
 import { ColorDot } from '../components/ColorBadge'
+import { DrawAnimation } from '../components/DrawAnimation'
 import { downloadSingleTemplate, exportEventResult, parseWorkbookFileForEvent } from '../utils/excel'
 import { groupRosterByColor } from '../utils/shuffle'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
@@ -94,6 +95,20 @@ export function EventPage() {
     return parts.join(' · ')
   }, [ev])
 
+  // เตรียมค่าที่แอนิเมชันสุ่มจะ "หยุด" ลง — คำนวณจากผลจริงที่ drawBracket() บันทึกไว้แล้ว
+  const finalSlots = useMemo(() => {
+    if (!ev) return undefined
+    if (ev.mode === 'colorTeam' && state.colorBracket) {
+      const [c0, c1] = state.colorBracket
+      return { a: { label: `สี${c0}`, color: c0 }, b: { label: `สี${c1}`, color: c1 } }
+    }
+    if (ev.mode === 'bracket' && state.unitBracket?.[0]) {
+      const p = state.unitBracket[0]
+      return { a: p.a, b: p.b }
+    }
+    return undefined
+  }, [ev, state.colorBracket, state.unitBracket])
+
   if (!ev) {
     return (
       <div className="rounded-2xl border border-surface-border bg-surface-card p-8 text-center">
@@ -133,12 +148,8 @@ export function EventPage() {
   }
 
   const doDraw = () => {
+    drawBracket(code) // คำนวณผลจริงทันที เก็บไว้เงียบ ๆ ก่อน — แอนิเมชันด้านล่างจะค่อย ๆ เผยผลนี้
     setIsDrawing(true)
-    window.setTimeout(() => {
-      drawBracket(code)
-      setIsDrawing(false)
-      notify('สุ่มจับคู่แข่งขันเรียบร้อย', 'success')
-    }, 900)
   }
 
   return (
@@ -284,10 +295,15 @@ export function EventPage() {
       </section>
 
       {isDrawing && (
-        <section className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gold-400/30 bg-gold-400/5 py-14">
-          <DiceIcon size={40} className="animate-tumble text-gold-400" />
-          <p className="text-sm font-semibold text-gold-300">กำลังสุ่มจับคู่แข่งขัน...</p>
-        </section>
+        <DrawAnimation
+          mode={ev.mode}
+          roster={state.roster}
+          finalSlots={finalSlots}
+          onDone={() => {
+            setIsDrawing(false)
+            notify('สุ่มจับคู่แข่งขันเรียบร้อย', 'success')
+          }}
+        />
       )}
 
       {hasBracket && !isDrawing && (

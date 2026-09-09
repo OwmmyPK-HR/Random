@@ -24,7 +24,7 @@ export function drawColorBracket(): ColorName[] {
   return fisherYates([...COLORS])
 }
 
-function entryLabel(entry: RosterEntry): string {
+export function entryLabel(entry: RosterEntry): string {
   if (entry.teamName) return entry.teamName
   return [entry.name1, entry.name2, entry.name3].filter(Boolean).join(' - ')
 }
