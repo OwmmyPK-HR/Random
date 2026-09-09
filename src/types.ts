@@ -54,7 +54,7 @@ export interface BracketPair {
 
 export interface EventState {
   roster: RosterEntry[]
-  colorBracket?: ColorName[] // ลำดับสีที่สุ่มจับคู่รอบแรก (สำหรับ colorTeam)
+  colorBracket?: [ColorName, ColorName][] // ตารางพบกันหมด 6 คู่ (สำหรับ colorTeam) — ที่เหลืออีก 2 นัด (ชิงที่ 3 + ชิงชนะเลิศ) รอผลรอบนี้ก่อน
   unitBracket?: BracketPair[] // คู่แข่งขันรอบแรกที่สุ่มได้ (สำหรับ bracket mode)
   drawnAt?: string
 }

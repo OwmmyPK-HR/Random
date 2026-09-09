@@ -201,12 +201,18 @@ function colorResultSheet(result: ResultMap): XLSX.WorkSheet {
 }
 
 function bracketSheet(ev: SportEvent, state: EventState): XLSX.WorkSheet {
-  const aoa: (string | number)[][] = [['คู่แข่งขันรอบแรก (Seed 1)']]
+  const aoa: (string | number)[][] = [['ผลการจับสลาก']]
   aoa.push([])
   if (ev.mode === 'colorTeam' && state.colorBracket) {
-    const [c0, c1, c2, c3] = state.colorBracket
-    aoa.push(['คู่ที่ 1', `สี${c0}`, 'vs', `สี${c1}`])
-    aoa.push(['คู่ที่ 2', `สี${c2}`, 'vs', `สี${c3}`])
+    aoa.push(['รอบแบ่งกลุ่ม (พบกันหมด) — ทุกสีเจอกันอย่างน้อย 1 ครั้ง'])
+    aoa.push(['นัดที่', 'ทีมสี 1', '', 'ทีมสี 2'])
+    state.colorBracket.forEach(([a, b], i) => {
+      aoa.push([i + 1, `สี${a}`, 'vs', `สี${b}`])
+    })
+    aoa.push([])
+    aoa.push(['รอบชิงอันดับ (รอผลรอบแบ่งกลุ่มก่อนถึงจะรู้คู่แข่ง)'])
+    aoa.push(['ชิงอันดับ 3', 'อันดับ 3 กลุ่ม', 'vs', 'อันดับ 4 กลุ่ม'])
+    aoa.push(['ชิงชนะเลิศ', 'อันดับ 1 กลุ่ม', 'vs', 'อันดับ 2 กลุ่ม'])
   } else if (state.unitBracket) {
     aoa.push(['คู่ที่', 'ผู้แข่งขัน / ทีม 1', 'สี', '', 'ผู้แข่งขัน / ทีม 2', 'สี'])
     state.unitBracket.forEach((p: BracketPair, i: number) => {
@@ -230,7 +236,7 @@ export function exportEventResult(ev: SportEvent, state: EventState) {
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, colorResultSheet(groupRosterByColor(state.roster)), 'รายชื่อแยกตามสี')
   if (state.colorBracket || state.unitBracket) {
-    XLSX.utils.book_append_sheet(wb, bracketSheet(ev, state), 'รอบแรก (Seed 1)')
+    XLSX.utils.book_append_sheet(wb, bracketSheet(ev, state), 'ผลการจับสลาก')
   }
   const filename = `ผลจับคู่_${ev.sportGroup}_${ev.name}${ev.ageLabel ? '_' + ev.ageLabel : ''}.xlsx`
   XLSX.writeFile(wb, sanitizeFilename(filename))

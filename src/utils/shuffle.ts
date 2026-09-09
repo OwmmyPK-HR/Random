@@ -19,9 +19,19 @@ export function groupRosterByColor(roster: RosterEntry[]): ResultMap {
   return result
 }
 
-/** สุ่มจับคู่แข่งขันรอบแรกระหว่าง 4 สี (สำหรับประเภททีมที่แต่ละสีมีทีมของตัวเองอยู่แล้ว เช่น ฟุตบอล วอลเลย์บอล) */
-export function drawColorBracket(): ColorName[] {
-  return fisherYates([...COLORS])
+/**
+ * จับสลากตารางแข่งขันแบบพบกันหมด (Round Robin) ระหว่าง 4 สี — ทุกสีเจอกันอย่างน้อย 1 ครั้ง (รวม 6 คู่)
+ * ใช้กับประเภททีมที่แต่ละสีมีทีมของตัวเองอยู่แล้ว (เช่น ฟุตบอล วอลเลย์บอล) โดยไม่ต้องมีรายชื่อนักกีฬา
+ * สุ่มแค่ "ลำดับการแข่งขัน" ของ 6 คู่นี้เท่านั้น (คู่ใครคู่มันครบทุกคู่อยู่แล้วโดยธรรมชาติของพบกันหมด)
+ */
+export function drawRoundRobin(): [ColorName, ColorName][] {
+  const pairs: [ColorName, ColorName][] = []
+  for (let i = 0; i < COLORS.length; i++) {
+    for (let j = i + 1; j < COLORS.length; j++) {
+      pairs.push([COLORS[i], COLORS[j]])
+    }
+  }
+  return fisherYates(pairs)
 }
 
 export function entryLabel(entry: RosterEntry): string {

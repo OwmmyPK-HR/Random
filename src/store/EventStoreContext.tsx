@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { EventState, RosterEntry, StoreShape } from '../types'
 import { getEventByCode } from '../data/events'
-import { drawColorBracket, drawUnitBracket, groupRosterByColor } from '../utils/shuffle'
+import { drawRoundRobin, drawUnitBracket, groupRosterByColor } from '../utils/shuffle'
 import { loadStore, saveStore, clearStore } from '../utils/storage'
 
 interface Ctx {
@@ -80,9 +80,11 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     if (!ev) return
     setStore((prev) => {
       const roster = prev[code]?.roster ?? []
-      if (roster.length === 0) return prev
+      // ประเภทแบ่งตามสีทีมจับสลากได้เลยโดยไม่ต้องมีรายชื่อ (ตารางพบกันหมดรู้แค่ว่ามี 4 สีก็พอ)
+      // ส่วนประเภทเดี่ยว/คู่/ทีม 3 คน ต้องมีรายชื่อก่อนถึงจะจับคู่แข่งขันได้
+      if (ev.mode === 'bracket' && roster.length === 0) return prev
       const grouped = groupRosterByColor(roster)
-      const colorBracket = ev.mode === 'colorTeam' ? drawColorBracket() : undefined
+      const colorBracket = ev.mode === 'colorTeam' ? drawRoundRobin() : undefined
       const unitBracket = ev.mode === 'bracket' ? drawUnitBracket(grouped) : undefined
       return {
         ...prev,
