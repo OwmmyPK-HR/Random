@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+
+// พื้นผิว/ตัวอักษร ต้องสลับค่าได้ตามโหมดมืด/ขาว จึงผูกกับ CSS variable (RGB channel)
+// แทนที่จะเป็นเลขฮฤกซ์ตายตัว — ดูค่าจริงของแต่ละโหมดใน src/index.css
+function themedColor(varName) {
+  return ({ opacityValue }) =>
+    opacityValue === undefined ? `rgb(var(${varName}))` : `rgb(var(${varName}) / ${opacityValue})`
+}
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -7,23 +15,23 @@ export default {
         sans: ['Kanit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // พื้นผิว HUD มืด — โทนหลักของระบบ
+        // พื้นผิวหลักของระบบ — สลับโทนมืด/ขาวได้ด้วยปุ่มสลับโหมด
         surface: {
-          canvas: '#0A0C14',
-          sunken: '#070810',
-          card: '#12141F',
-          raised: '#1B1E2E',
-          border: '#242840',
-          borderLight: '#333756',
+          canvas: themedColor('--surface-canvas'),
+          sunken: themedColor('--surface-sunken'),
+          card: themedColor('--surface-card'),
+          raised: themedColor('--surface-raised'),
+          border: themedColor('--surface-border'),
+          borderLight: themedColor('--surface-borderLight'),
         },
-        // ตัวอักษรบนพื้นมืด
+        // ตัวอักษร — สลับโทนมืด/ขาวได้เช่นกัน
         mist: {
-          100: '#F2F3F9',
-          300: '#B7BBD4',
-          400: '#9297B4',
-          500: '#767B9B',
-          600: '#5A5F7C',
-          700: '#3F4258',
+          100: themedColor('--mist-100'),
+          300: themedColor('--mist-300'),
+          400: themedColor('--mist-400'),
+          500: themedColor('--mist-500'),
+          600: themedColor('--mist-600'),
+          700: themedColor('--mist-700'),
         },
         // ทองคำ — accent หลักของระบบ (ถ้วยรางวัล/ชัยชนะ)
         gold: {

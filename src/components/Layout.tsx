@@ -2,8 +2,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { SPORT_GROUPS } from '../data/events'
 import { COLORS } from '../types'
+import { useTheme } from '../store/ThemeContext'
 import { ColorDot } from './ColorBadge'
-import { ChartIcon, CloseIcon, HomeIcon, MenuIcon, SPORT_ICON } from './Icons'
+import { ChartIcon, CloseIcon, HomeIcon, MenuIcon, MoonIcon, SPORT_ICON, SunIcon } from './Icons'
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -43,6 +44,21 @@ function navClass(active: boolean) {
   }`
 }
 
+function ThemeToggle({ className = '' }: { className?: string }) {
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
+  return (
+    <button
+      onClick={toggleTheme}
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-surface-border text-mist-300 transition-colors hover:border-gold-400/50 hover:text-gold-300 ${className}`}
+      aria-label={isDark ? 'สลับเป็นโหมดสีขาว' : 'สลับเป็นโหมดมืด'}
+      title={isDark ? 'โหมดสีขาว' : 'โหมดมืด'}
+    >
+      {isDark ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+    </button>
+  )
+}
+
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
@@ -74,22 +90,26 @@ export function Layout({ children }: { children: ReactNode }) {
             <Brand />
           </NavLink>
 
-          <div className="hidden items-center gap-3 rounded-full border border-surface-border bg-surface-card px-3 py-1.5 sm:flex">
-            {COLORS.map((c) => (
-              <span key={c} className="flex items-center gap-1.5 text-xs font-semibold text-mist-400">
-                <ColorDot color={c} size={9} />
-                {c}
-              </span>
-            ))}
-          </div>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="hidden items-center gap-3 rounded-full border border-surface-border bg-surface-card px-3 py-1.5 sm:flex">
+              {COLORS.map((c) => (
+                <span key={c} className="flex items-center gap-1.5 text-xs font-semibold text-mist-400">
+                  <ColorDot color={c} size={9} />
+                  {c}
+                </span>
+              ))}
+            </div>
 
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="rounded-lg border border-surface-border p-2 text-mist-300 lg:hidden"
-            aria-label="เปิดเมนู"
-          >
-            <MenuIcon size={19} />
-          </button>
+            <ThemeToggle />
+
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="rounded-lg border border-surface-border p-2 text-mist-300 lg:hidden"
+              aria-label="เปิดเมนู"
+            >
+              <MenuIcon size={19} />
+            </button>
+          </div>
         </div>
       </header>
 
