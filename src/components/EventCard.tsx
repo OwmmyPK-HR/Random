@@ -4,7 +4,7 @@ import { CheckCircleIcon, ChevronRightIcon, CircleDashedIcon, ClockIcon } from '
 
 export function EventCard({ ev, state }: { ev: SportEvent; state: EventState }) {
   const count = state.roster.length
-  const done = !!state.result
+  const done = !!(state.colorBracket || state.unitBracket)
 
   return (
     <Link
@@ -41,13 +41,13 @@ function StatusPill({ done, hasData }: { done: boolean; hasData: boolean }) {
   if (done)
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">
-        <CheckCircleIcon size={12} /> สุ่มแล้ว
+        <CheckCircleIcon size={12} /> จับคู่แล้ว
       </span>
     )
   if (hasData)
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/10 px-2.5 py-1 text-[11px] font-bold text-gold-600">
-        <ClockIcon size={12} /> รอสุ่ม
+        <ClockIcon size={12} /> รอจับคู่
       </span>
     )
   return (

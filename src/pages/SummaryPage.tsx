@@ -7,6 +7,7 @@ import { useToast } from '../store/ToastContext'
 import { exportAllResults } from '../utils/excel'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
+import { groupRosterByColor } from '../utils/shuffle'
 import { CheckCircleIcon, ClockIcon, DownloadIcon, TrashIcon } from '../components/Icons'
 
 export function SummaryPage() {
@@ -14,9 +15,9 @@ export function SummaryPage() {
   const { notify } = useToast()
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const randomizedTotal = EVENTS.filter((ev) => store[ev.code]?.result).length
+  const randomizedTotal = EVENTS.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
   const colorCounts = Object.fromEntries(
-    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + (store[ev.code]?.result?.[c]?.length ?? 0), 0)]),
+    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + groupRosterByColor(store[ev.code]?.roster ?? [])[c].length, 0)]),
   ) as Record<(typeof COLORS)[number], number>
 
   return (
@@ -25,7 +26,7 @@ export function SummaryPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-ink-900">สรุปผล &amp; ส่งออก</h1>
           <p className="text-sm text-ink-400">
-            สุ่มแล้ว {randomizedTotal}/{EVENTS.length} รายการ
+            สุ่มจับคู่แล้ว {randomizedTotal}/{EVENTS.length} รายการ
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -45,7 +46,7 @@ export function SummaryPage() {
       </div>
 
       <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-        <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (รวมทุกประเภทที่สุ่มแล้ว)</h2>
+        <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (รวมทุกประเภทที่มีข้อมูลแล้ว)</h2>
         <div className="mt-4">
           <ColorDistributionBar counts={colorCounts} />
         </div>
@@ -73,7 +74,8 @@ export function SummaryPage() {
             {SPORT_GROUPS.map((g) =>
               g.events.map((ev, idx) => {
                 const state = store[ev.code]
-                const result = state?.result
+                const grouped = groupRosterByColor(state?.roster ?? [])
+                const hasBracket = !!(state?.colorBracket || state?.unitBracket)
                 return (
                   <tr key={ev.code} className="hover:bg-ink-50/60">
                     {idx === 0 && (
@@ -92,17 +94,17 @@ export function SummaryPage() {
                     </td>
                     {COLORS.map((c) => (
                       <td key={c} className="px-3 py-2.5 text-center text-xs font-semibold text-ink-600">
-                        {result?.[c]?.length ?? '-'}
+                        {grouped[c].length || '-'}
                       </td>
                     ))}
                     <td className="px-4 py-2.5 text-center">
-                      {result ? (
+                      {hasBracket ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-bold text-green-700">
-                          <CheckCircleIcon size={11} /> สุ่มแล้ว
+                          <CheckCircleIcon size={11} /> จับคู่แล้ว
                         </span>
                       ) : state?.roster?.length ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/10 px-2 py-0.5 text-[11px] font-bold text-gold-600">
-                          <ClockIcon size={11} /> รอสุ่ม
+                          <ClockIcon size={11} /> รอจับคู่
                         </span>
                       ) : (
                         <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-400">ไม่มีข้อมูล</span>

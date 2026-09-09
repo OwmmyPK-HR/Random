@@ -21,7 +21,10 @@ export function SportGroupPage() {
   }
 
   const Icon = SPORT_ICON[group.name]
-  const done = group.events.filter((ev) => getEvent(ev.code).result).length
+  const done = group.events.filter((ev) => {
+    const s = getEvent(ev.code)
+    return s.colorBracket || s.unitBracket
+  }).length
 
   return (
     <div className="space-y-5">
@@ -36,7 +39,7 @@ export function SportGroupPage() {
           <div>
             <h1 className="text-2xl font-extrabold text-ink-900">{group.name}</h1>
             <p className="text-sm text-ink-400">
-              {group.events.length} รายการแข่งขัน · สุ่มแล้ว {done}/{group.events.length}
+              {group.events.length} รายการแข่งขัน · จับคู่แล้ว {done}/{group.events.length}
             </p>
           </div>
         </div>

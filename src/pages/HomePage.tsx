@@ -6,6 +6,7 @@ import { useEventStore } from '../store/EventStoreContext'
 import { useToast } from '../store/ToastContext'
 import { downloadAllTemplates, exportAllResults, parseWorkbookFile } from '../utils/excel'
 import { eventsWithDataCount, randomizedCount, totalHeadcount } from '../utils/stats'
+import { groupRosterByColor } from '../utils/shuffle'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import {
   ChartIcon,
@@ -38,7 +39,7 @@ export function HomePage() {
   const heads = totalHeadcount(store)
 
   const colorCounts = Object.fromEntries(
-    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + (store[ev.code]?.result?.[c]?.length ?? 0), 0)]),
+    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + groupRosterByColor(store[ev.code]?.roster ?? [])[c].length, 0)]),
   ) as Record<(typeof COLORS)[number], number>
 
   const handleBulkFile = async (file: File) => {
@@ -73,11 +74,12 @@ export function HomePage() {
             <TrophyIcon size={13} /> TU Sport Day 2026
           </span>
           <h1 className="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl">
-            ระบบสุ่มแบ่งสายกีฬาสี
+            ระบบสุ่มจับคู่แข่งขันกีฬาสี
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/80 sm:text-[15px]">
-            อัปโหลดรายชื่อนักกีฬาผ่านฟอร์ม Excel แล้วสุ่มแบ่งเข้า 4 สี — ฟ้า ม่วง ชมพู เขียว — อย่างเป็นธรรม
-            พร้อมจับสายแข่งขันรอบแรก (Seed 1) ให้อัตโนมัติ ทำงานบนเบราว์เซอร์ทั้งหมด ไม่ต้องมีเซิร์ฟเวอร์
+            แต่ละสี — ฟ้า ม่วง ชมพู เขียว — มีนักกีฬาและทีมของตัวเองอยู่แล้ว แค่กรอกรายชื่อแยกตามสีผ่านฟอร์ม Excel
+            แล้วให้ระบบ<strong className="font-bold">สุ่มจับคู่แข่งขันรอบแรก (Seed 1)</strong>ให้อย่างเป็นธรรม
+            ทำงานบนเบราว์เซอร์ทั้งหมด ไม่ต้องมีเซิร์ฟเวอร์
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             <button
@@ -117,14 +119,14 @@ export function HomePage() {
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile icon={<TrophyIcon size={17} />} label="ประเภทกีฬาทั้งหมด" value={totalEvents} />
         <StatTile icon={<UsersIcon size={17} />} label="มีข้อมูลนักกีฬาแล้ว" value={withData} suffix={`/ ${totalEvents}`} />
-        <StatTile icon={<CheckCircleIcon size={17} />} label="สุ่มแบ่งสีแล้ว" value={randomized} suffix={`/ ${totalEvents}`} accent />
+        <StatTile icon={<CheckCircleIcon size={17} />} label="สุ่มจับคู่แข่งขันแล้ว" value={randomized} suffix={`/ ${totalEvents}`} accent />
         <StatTile icon={<UsersIcon size={17} />} label="นักกีฬารวม (โดยประมาณ)" value={heads} suffix="คน" />
       </section>
 
       {/* COLOR DISTRIBUTION */}
-      {randomized > 0 && (
+      {withData > 0 && (
         <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-          <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (จากรายการที่สุ่มแล้ว)</h2>
+          <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (รวมทุกประเภทที่มีข้อมูลแล้ว)</h2>
           <div className="mt-4">
             <ColorDistributionBar counts={colorCounts} />
           </div>
@@ -136,7 +138,7 @@ export function HomePage() {
         <h2 className="mb-3 text-lg font-bold text-ink-900">ประเภทกีฬา</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SPORT_GROUPS.map((g) => {
-            const done = g.events.filter((ev) => store[ev.code]?.result).length
+            const done = g.events.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
             const Icon = SPORT_ICON[g.name]
             const pct = g.events.length ? (done / g.events.length) * 100 : 0
             return (
@@ -156,7 +158,7 @@ export function HomePage() {
                   <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-ink-500">
                     <span>{g.events.length} รายการ</span>
                     <span className={pct === 100 ? 'text-green-600' : ''}>
-                      สุ่มแล้ว {done}/{g.events.length}
+                      จับคู่แล้ว {done}/{g.events.length}
                     </span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-ink-100">
@@ -177,10 +179,10 @@ export function HomePage() {
         <p className="font-bold text-ink-900">วิธีใช้งาน</p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            'ดาวน์โหลดฟอร์ม Excel รวมทุกประเภท กรอกรายชื่อนักกีฬาในแต่ละชีตให้ครบ',
-            'อัปโหลดไฟล์เดิมกลับเข้าระบบ ข้อมูลจะกระจายเข้าแต่ละประเภทกีฬาให้อัตโนมัติ',
-            'เข้าไปที่แต่ละประเภทกีฬา กด “สุ่มแบ่งสี” เพื่อสุ่มอย่างเป็นธรรม',
-            'ระบบจับสายแข่งรอบแรก (Seed 1) ให้อัตโนมัติ ส่งออกผลเป็น Excel ได้ทันที',
+            'ดาวน์โหลดฟอร์ม Excel รวมทุกประเภท — แต่ละชีตมีคอลัมน์แยกตามสีให้แล้ว (ฟ้า/ม่วง/ชมพู/เขียว)',
+            'กรอกรายชื่อนักกีฬา/ทีมของแต่ละสีลงคอลัมน์ของสีนั้น แล้วอัปโหลดไฟล์กลับเข้าระบบ',
+            'เข้าไปที่แต่ละประเภทกีฬา กด “สุ่มจับคู่แข่งขัน” ให้ระบบสุ่มคู่ต่อสู้รอบแรกอย่างเป็นธรรม',
+            'ได้สายการแข่งขันรอบแรก (Seed 1) ทันที ส่งออกผลเป็น Excel ได้เลย',
           ].map((text, i) => (
             <div key={i} className="relative rounded-xl border border-ink-100 bg-ink-50/60 p-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">

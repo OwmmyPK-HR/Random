@@ -18,7 +18,7 @@ export function totalHeadcount(store: StoreShape): number {
 }
 
 export function randomizedCount(store: StoreShape): number {
-  return EVENTS.filter((ev) => store[ev.code]?.result).length
+  return EVENTS.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
 }
 
 export function eventsWithDataCount(store: StoreShape): number {

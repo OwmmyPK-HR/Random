@@ -1,4 +1,5 @@
 import { COLORS, COLOR_THEME, type ResultMap, type RosterEntry } from '../types'
+import { TrashIcon } from './Icons'
 
 function entryLabel(entry: RosterEntry): { main: string; sub?: string } {
   if (entry.teamName) {
@@ -13,7 +14,7 @@ function initials(text: string): string {
   return t ? t[0] : '·'
 }
 
-export function ResultBoard({ result }: { result: ResultMap }) {
+export function ResultBoard({ result, onRemove }: { result: ResultMap; onRemove?: (id: string) => void }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {COLORS.map((color, colIdx) => {
@@ -50,7 +51,17 @@ export function ResultBoard({ result }: { result: ResultMap }) {
                       <span className="block truncate font-medium text-ink-800">{main}</span>
                       {sub && <span className="block truncate text-xs text-ink-400">{sub}</span>}
                     </span>
-                    <span className="ml-auto shrink-0 text-[11px] font-semibold text-ink-300">{i + 1}</span>
+                    {onRemove ? (
+                      <button
+                        onClick={() => onRemove(entry.id)}
+                        className="ml-auto shrink-0 text-ink-300 hover:text-rose-500"
+                        aria-label="ลบรายการนี้"
+                      >
+                        <TrashIcon size={13} />
+                      </button>
+                    ) : (
+                      <span className="ml-auto shrink-0 text-[11px] font-semibold text-ink-300">{i + 1}</span>
+                    )}
                   </li>
                 )
               })}

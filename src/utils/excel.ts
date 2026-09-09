@@ -1,13 +1,23 @@
 import * as XLSX from 'xlsx'
 import { EVENTS, getEventByCode } from '../data/events'
 import { COLORS } from '../types'
-import type { BracketPair, ColorName, EntryShape, EventState, ResultMap, RosterEntry, SportEvent, StoreShape } from '../types'
+import type { BracketPair, EntryShape, EventState, ResultMap, RosterEntry, SportEvent, StoreShape } from '../types'
+import { groupRosterByColor } from './shuffle'
 
-const HEADERS: Record<EntryShape, string[]> = {
-  individual: ['ลำดับ', 'ชื่อ-นามสกุล', 'หมายเหตุ'],
-  pair: ['ลำดับ', 'ชื่อคู่ที่ 1', 'ชื่อคู่ที่ 2', 'หมายเหตุ'],
-  pairMixed: ['ลำดับ', 'ชื่อ (ฝ่ายชาย)', 'ชื่อ (ฝ่ายหญิง)', 'หมายเหตุ'],
-  team3: ['ลำดับ', 'ชื่อทีม (ถ้ามี)', 'สมาชิกคนที่ 1', 'สมาชิกคนที่ 2', 'สมาชิกคนที่ 3', 'หมายเหตุ'],
+// แต่ละสีมีคอลัมน์ของตัวเอง เรียงติดกัน 4 บล็อก (ฟ้า | ม่วง | ชมพู | เขียว)
+// ผู้ใช้กรอกรายชื่อของสีไหนก็ลงคอลัมน์ของสีนั้นโดยตรง ไม่ต้องพิมพ์ชื่อสีเอง — จำนวนแต่ละสีไม่ต้องเท่ากัน
+const BLOCK_FIELDS: Record<EntryShape, string[]> = {
+  individual: ['ชื่อ-นามสกุล'],
+  pair: ['ชื่อคนที่ 1', 'ชื่อคนที่ 2'],
+  pairMixed: ['ชื่อฝ่ายชาย', 'ชื่อฝ่ายหญิง'],
+  team3: ['ชื่อทีม (ถ้ามี)', 'สมาชิกคนที่ 1', 'สมาชิกคนที่ 2', 'สมาชิกคนที่ 3'],
+}
+
+// แถวแรกของแต่ละบล็อก ใช้เป็นจุดสังเกตหาตำแหน่งหัวตารางตอนอ่านไฟล์กลับ
+const FIRST_FIELD_MARKERS = Array.from(new Set(Object.values(BLOCK_FIELDS).map((f) => f[0])))
+
+function blockWidth(shape: EntryShape): number {
+  return BLOCK_FIELDS[shape].length
 }
 
 function eventTitle(ev: SportEvent): string {
@@ -24,28 +34,46 @@ export function sheetNameForEvent(ev: SportEvent): string {
   return safe.length > 31 ? safe.slice(0, 31) : safe
 }
 
-function rowFromEntry(shape: EntryShape, idx: number, r: RosterEntry): (string | number)[] {
+function entryFields(shape: EntryShape, r: RosterEntry): (string | number)[] {
   switch (shape) {
     case 'individual':
-      return [idx, r.name1 ?? '', r.note ?? '']
+      return [r.name1 ?? '']
     case 'pair':
     case 'pairMixed':
-      return [idx, r.name1 ?? '', r.name2 ?? '', r.note ?? '']
+      return [r.name1 ?? '', r.name2 ?? '']
     case 'team3':
-      return [idx, r.teamName ?? '', r.name1 ?? '', r.name2 ?? '', r.name3 ?? '', r.note ?? '']
+      return [r.teamName ?? '', r.name1 ?? '', r.name2 ?? '', r.name3 ?? '']
   }
 }
 
-function sheetForEvent(ev: SportEvent, rows: RosterEntry[] = []): XLSX.WorkSheet {
-  const headers = HEADERS[ev.entryShape]
-  const aoa: (string | number)[][] = [[eventTitle(ev)], [], headers]
-  rows.forEach((r, i) => aoa.push(rowFromEntry(ev.entryShape, i + 1, r)))
-  if (rows.length === 0) {
-    for (let i = 1; i <= 24; i++) aoa.push([i])
+function sheetForEvent(ev: SportEvent, roster: RosterEntry[] = []): XLSX.WorkSheet {
+  const width = blockWidth(ev.entryShape)
+  const totalCols = width * COLORS.length
+  const grouped = groupRosterByColor(roster)
+
+  const aoa: (string | number)[][] = [[eventTitle(ev)], ['กรอกรายชื่อของแต่ละสีลงในคอลัมน์ของสีนั้นโดยตรง (จำนวนแต่ละสีไม่ต้องเท่ากัน ไม่ต้องเรียงแถวให้ตรงกัน)']]
+
+  // แถวหัวกลุ่มสี (merge ทับความกว้างของบล็อกนั้น)
+  const groupRow: (string | number)[] = new Array(totalCols).fill('')
+  COLORS.forEach((c, i) => (groupRow[i * width] = `สี${c}`))
+  aoa.push(groupRow)
+
+  // แถวหัวคอลัมน์ย่อย (ซ้ำกันทุกบล็อกสี)
+  aoa.push(COLORS.flatMap(() => BLOCK_FIELDS[ev.entryShape]))
+
+  const maxLen = Math.max(...COLORS.map((c) => grouped[c].length), 0)
+  const fillRows = Math.max(maxLen, 10)
+  for (let i = 0; i < fillRows; i++) {
+    aoa.push(COLORS.flatMap((c) => (grouped[c][i] ? entryFields(ev.entryShape, grouped[c][i]) : new Array(width).fill(''))))
   }
+
   const ws = XLSX.utils.aoa_to_sheet(aoa)
-  ws['!cols'] = headers.map((h) => ({ wch: h === 'ลำดับ' ? 8 : h.includes('หมายเหตุ') ? 22 : 26 }))
-  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }]
+  ws['!cols'] = new Array(totalCols).fill(0).map((_, i) => ({ wch: i % width === 0 && ev.entryShape === 'team3' ? 20 : 18 }))
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
+    ...(width > 1 ? COLORS.map((_, i) => ({ s: { r: 2, c: i * width }, e: { r: 2, c: i * width + width - 1 } })) : []),
+  ]
   return ws
 }
 
@@ -76,37 +104,41 @@ function cell(v: unknown): string {
   return String(v).trim()
 }
 
-function parseRowsForShape(shape: EntryShape, aoa: unknown[][], headerRowIdx: number): RosterEntry[] {
-  const out: RosterEntry[] = []
-  for (let r = headerRowIdx + 1; r < aoa.length; r++) {
-    const row = aoa[r] ?? []
-    if (shape === 'individual') {
-      const name1 = cell(row[1])
-      if (!name1) continue
-      out.push({ id: crypto.randomUUID(), name1, note: cell(row[2]) || undefined })
-    } else if (shape === 'pair' || shape === 'pairMixed') {
-      const name1 = cell(row[1])
-      const name2 = cell(row[2])
-      if (!name1 && !name2) continue
-      out.push({ id: crypto.randomUUID(), name1, name2, note: cell(row[3]) || undefined })
-    } else if (shape === 'team3') {
-      const teamName = cell(row[1])
-      const name1 = cell(row[2])
-      const name2 = cell(row[3])
-      const name3 = cell(row[4])
-      if (!teamName && !name1 && !name2 && !name3) continue
-      out.push({ id: crypto.randomUUID(), teamName: teamName || undefined, name1, name2, name3, note: cell(row[5]) || undefined })
-    }
-  }
-  return out
-}
-
 function findHeaderRow(aoa: unknown[][]): number {
   for (let i = 0; i < aoa.length; i++) {
     const first = cell(aoa[i]?.[0])
-    if (first === 'ลำดับ') return i
+    if (FIRST_FIELD_MARKERS.includes(first)) return i
   }
-  return 2 // โครงสร้างมาตรฐานที่สร้างเอง: แถว 0 = หัวข้อ, 1 = ว่าง, 2 = หัวตาราง
+  return 3 // โครงสร้างมาตรฐานที่สร้างเอง: 0=หัวข้อ, 1=คำอธิบาย, 2=หัวกลุ่มสี, 3=หัวคอลัมน์ย่อย
+}
+
+function parseRowsGroupedByColor(shape: EntryShape, aoa: unknown[][], headerRowIdx: number): RosterEntry[] {
+  const width = blockWidth(shape)
+  const out: RosterEntry[] = []
+  for (let r = headerRowIdx + 1; r < aoa.length; r++) {
+    const row = aoa[r] ?? []
+    COLORS.forEach((color, ci) => {
+      const base = ci * width
+      if (shape === 'individual') {
+        const name1 = cell(row[base])
+        if (!name1) return
+        out.push({ id: crypto.randomUUID(), color, name1 })
+      } else if (shape === 'pair' || shape === 'pairMixed') {
+        const name1 = cell(row[base])
+        const name2 = cell(row[base + 1])
+        if (!name1 && !name2) return
+        out.push({ id: crypto.randomUUID(), color, name1, name2 })
+      } else if (shape === 'team3') {
+        const teamName = cell(row[base])
+        const name1 = cell(row[base + 1])
+        const name2 = cell(row[base + 2])
+        const name3 = cell(row[base + 3])
+        if (!teamName && !name1 && !name2 && !name3) return
+        out.push({ id: crypto.randomUUID(), color, teamName: teamName || undefined, name1, name2, name3 })
+      }
+    })
+  }
+  return out
 }
 
 export interface ParseResult {
@@ -127,12 +159,11 @@ export async function parseWorkbookFile(file: File): Promise<ParseResult> {
     const ws = wb.Sheets[sheetName]
     const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, blankrows: false, defval: '' })
     if (!ev) {
-      // ไฟล์เดี่ยว: ถ้ามีชีตเดียวและไม่ match code ให้ข้ามแบบเงียบ ๆ ไม่ต้องแจ้งเตือน (มักเกิดจากเปลี่ยนชื่อชีต)
       if (wb.SheetNames.length > 1) unmatchedSheets.push(sheetName)
       continue
     }
     const headerRowIdx = findHeaderRow(aoa)
-    const rows = parseRowsForShape(ev.entryShape, aoa, headerRowIdx)
+    const rows = parseRowsGroupedByColor(ev.entryShape, aoa, headerRowIdx)
     if (rows.length > 0) parsed[ev.code] = rows
   }
 
@@ -150,7 +181,7 @@ export async function parseWorkbookFileForEvent(file: File, ev: SportEvent): Pro
   const ws = wb.Sheets[sheetName]
   const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, blankrows: false, defval: '' })
   const headerRowIdx = findHeaderRow(aoa)
-  return parseRowsForShape(ev.entryShape, aoa, headerRowIdx)
+  return parseRowsGroupedByColor(ev.entryShape, aoa, headerRowIdx)
 }
 
 function entryLabel(entry: RosterEntry): string {
@@ -160,8 +191,7 @@ function entryLabel(entry: RosterEntry): string {
 
 function colorResultSheet(result: ResultMap): XLSX.WorkSheet {
   const maxLen = Math.max(...COLORS.map((c) => result[c].length), 0)
-  const aoa: (string | number)[][] = [['สี ' + COLORS.join(' | จำนวน / สี '), '', '', '']]
-  aoa[0] = COLORS.map((c) => `สี${c} (${result[c].length} คน/หน่วย)`)
+  const aoa: (string | number)[][] = [COLORS.map((c) => `สี${c} (${result[c].length} คน/หน่วย)`)]
   for (let i = 0; i < maxLen; i++) {
     aoa.push(COLORS.map((c) => (result[c][i] ? entryLabel(result[c][i]) : '')))
   }
@@ -195,17 +225,18 @@ function bracketSheet(ev: SportEvent, state: EventState): XLSX.WorkSheet {
   return ws
 }
 
-/** ส่งออกผลการสุ่ม + สายการแข่งขันรอบแรก ของ 1 ประเภทกีฬา เป็น Excel */
+/** ส่งออกรายชื่อแยกตามสี + สายการแข่งขันรอบแรก ของ 1 ประเภทกีฬา เป็น Excel */
 export function exportEventResult(ev: SportEvent, state: EventState) {
-  if (!state.result) return
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, colorResultSheet(state.result), 'ผลการแบ่งสี')
-  XLSX.utils.book_append_sheet(wb, bracketSheet(ev, state), 'รอบแรก (Seed 1)')
-  const filename = `ผลสุ่ม_${ev.sportGroup}_${ev.name}${ev.ageLabel ? '_' + ev.ageLabel : ''}.xlsx`
+  XLSX.utils.book_append_sheet(wb, colorResultSheet(groupRosterByColor(state.roster)), 'รายชื่อแยกตามสี')
+  if (state.colorBracket || state.unitBracket) {
+    XLSX.utils.book_append_sheet(wb, bracketSheet(ev, state), 'รอบแรก (Seed 1)')
+  }
+  const filename = `ผลจับคู่_${ev.sportGroup}_${ev.name}${ev.ageLabel ? '_' + ev.ageLabel : ''}.xlsx`
   XLSX.writeFile(wb, sanitizeFilename(filename))
 }
 
-/** ส่งออกสรุปผลทุกประเภทกีฬาที่สุ่มแล้ว เป็นไฟล์ Excel เดียว (ชีตสรุป + ชีตรายละเอียดของแต่ละประเภท) */
+/** ส่งออกสรุปทุกประเภทกีฬาที่มีข้อมูลแล้ว เป็นไฟล์ Excel เดียว (ชีตสรุป + ชีตรายละเอียดของแต่ละประเภท) */
 export function exportAllResults(store: StoreShape) {
   const wb = XLSX.utils.book_new()
 
@@ -213,12 +244,14 @@ export function exportAllResults(store: StoreShape) {
     ['หมวดกีฬา', 'รายการ', 'ประเภท', 'รุ่นอายุ', 'สีฟ้า', 'สีม่วง', 'สีชมพู', 'สีเขียว', 'รวม', 'สถานะ'],
   ]
 
-  let anyResult = false
+  let anyData = false
   for (const ev of EVENTS) {
     const state = store[ev.code]
-    const result = state?.result
-    const counts = COLORS.map((c) => result?.[c]?.length ?? 0)
+    const roster = state?.roster ?? []
+    const grouped = groupRosterByColor(roster)
+    const counts = COLORS.map((c) => grouped[c].length)
     const total = counts.reduce((a, b) => a + b, 0)
+    const drawn = !!(state?.colorBracket || state?.unitBracket)
     summaryAoa.push([
       ev.sportGroup,
       ev.name,
@@ -229,9 +262,9 @@ export function exportAllResults(store: StoreShape) {
       counts[2],
       counts[3],
       total,
-      result ? 'สุ่มแล้ว' : 'ยังไม่สุ่ม',
+      total === 0 ? 'ไม่มีข้อมูล' : drawn ? 'จับคู่แล้ว' : 'รอจับคู่',
     ])
-    if (result) anyResult = true
+    if (total > 0) anyData = true
   }
   const summaryWs = XLSX.utils.aoa_to_sheet(summaryAoa)
   summaryWs['!cols'] = [
@@ -240,14 +273,14 @@ export function exportAllResults(store: StoreShape) {
   ]
   XLSX.utils.book_append_sheet(wb, summaryWs, 'สรุปทุกประเภท')
 
-  if (anyResult) {
+  if (anyData) {
     for (const ev of EVENTS) {
       const state = store[ev.code]
-      if (!state?.result) continue
+      if (!state?.roster?.length) continue
       const sheetName = sheetNameForEvent(ev)
-      XLSX.utils.book_append_sheet(wb, colorResultSheet(state.result), sheetName)
+      XLSX.utils.book_append_sheet(wb, colorResultSheet(groupRosterByColor(state.roster)), sheetName)
     }
   }
 
-  XLSX.writeFile(wb, 'สรุปผลสุ่มสายกีฬาสี_TU_Sport_Day_2026.xlsx')
+  XLSX.writeFile(wb, 'สรุปรายชื่อและผลจับคู่_TU_Sport_Day_2026.xlsx')
 }

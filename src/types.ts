@@ -17,8 +17,8 @@ export const COLOR_THEME: Record<
 // ----- รูปแบบข้อมูลผู้สมัคร (ตามชนิดของประเภทกีฬา) -----
 export type EntryShape = 'individual' | 'pair' | 'pairMixed' | 'team3'
 
-// colorTeam = นักกีฬาทั้งหมดถูกแบ่งกระจายเข้า 4 สี เพื่อประกอบเป็นทีมของแต่ละสี (เช่น ฟุตบอล วอลเลย์บอล)
-// bracket   = แต่ละหน่วย (คน/คู่/ทีม 3 คน) ถูกสุ่มเข้าสีใดสีหนึ่ง แล้วจับสายแข่งรอบแรกระหว่างหน่วยด้วยกันเอง
+// colorTeam = แต่ละสีมีทีม/นักกีฬาของตัวเองอยู่แล้ว สุ่มแค่ "คู่แข่งขัน" ว่า 4 สีจะพบกันคู่ไหนก่อน (เช่น ฟุตบอล วอลเลย์บอล)
+// bracket   = แต่ละหน่วย (คน/คู่/ทีม 3 คน) มีสีของตัวเองอยู่แล้ว สุ่มจับคู่แข่งขันรอบแรกระหว่างหน่วยด้วยกันเอง
 export type CompetitionMode = 'colorTeam' | 'bracket'
 
 export interface SportEvent {
@@ -32,14 +32,14 @@ export interface SportEvent {
   mode: CompetitionMode
 }
 
-// ----- ผู้สมัคร/หน่วยแข่งขัน 1 รายการในฟอร์ม -----
+// ----- ผู้สมัคร/หน่วยแข่งขัน 1 รายการในฟอร์ม — สีของแต่ละคนถูกกำหนดไว้แล้วตั้งแต่ตอนกรอกข้อมูล -----
 export interface RosterEntry {
   id: string
+  color: ColorName
   name1: string
   name2?: string
   name3?: string
   teamName?: string
-  note?: string
 }
 
 export type ResultMap = Record<ColorName, RosterEntry[]>
@@ -51,10 +51,9 @@ export interface BracketPair {
 
 export interface EventState {
   roster: RosterEntry[]
-  result?: ResultMap
   colorBracket?: ColorName[] // ลำดับสีที่สุ่มจับคู่รอบแรก (สำหรับ colorTeam)
-  unitBracket?: BracketPair[] // คู่แข่งรอบแรก (สำหรับ bracket mode)
-  shuffledAt?: string
+  unitBracket?: BracketPair[] // คู่แข่งขันรอบแรกที่สุ่มได้ (สำหรับ bracket mode)
+  drawnAt?: string
 }
 
 export type StoreShape = Record<string, EventState>

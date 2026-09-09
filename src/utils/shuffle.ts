@@ -10,20 +10,16 @@ function fisherYates<T>(input: T[]): T[] {
   return arr
 }
 
-/**
- * สุ่มแบ่งรายชื่อ/หน่วยแข่งขันเข้า 4 สีอย่างสมดุล (จำนวนต่างกันได้ไม่เกิน 1)
- * ลำดับการสุ่มเป็นแบบสุ่มจริง (ไม่ได้เรียงตามลำดับที่กรอกมา)
- */
-export function balancedShuffle(entries: RosterEntry[]): ResultMap {
-  const shuffled = fisherYates(entries)
+/** จัดกลุ่มรายชื่อ/หน่วยแข่งขันตามสีที่กำหนดไว้แล้ว (ไม่มีการสุ่ม — แค่จัดเรียงตามข้อมูลจริง) */
+export function groupRosterByColor(roster: RosterEntry[]): ResultMap {
   const result: ResultMap = { ฟ้า: [], ม่วง: [], ชมพู: [], เขียว: [] }
-  shuffled.forEach((entry, i) => {
-    result[COLORS[i % COLORS.length]].push(entry)
-  })
+  for (const entry of roster) {
+    result[entry.color].push(entry)
+  }
   return result
 }
 
-/** สุ่มจับคู่แข่งขันรอบแรกระหว่าง 4 สี (สำหรับประเภททีมที่แบ่งตามสี เช่น ฟุตบอล วอลเลย์บอล) */
+/** สุ่มจับคู่แข่งขันรอบแรกระหว่าง 4 สี (สำหรับประเภททีมที่แต่ละสีมีทีมของตัวเองอยู่แล้ว เช่น ฟุตบอล วอลเลย์บอล) */
 export function drawColorBracket(): ColorName[] {
   return fisherYates([...COLORS])
 }
@@ -34,7 +30,7 @@ function entryLabel(entry: RosterEntry): string {
 }
 
 /**
- * สุ่มจับคู่แข่งขันรอบแรก (Seed 1) ระหว่างหน่วยแข่งขันทั้งหมด (คน/คู่/ทีม 3 คน)
+ * สุ่มจับคู่แข่งขันรอบแรก (Seed 1) ระหว่างหน่วยแข่งขันทั้งหมด (คน/คู่/ทีม 3 คน) ที่มีสีกำหนดไว้แล้ว
  * โดยพยายามเลี่ยงไม่ให้คู่แข่งอยู่สีเดียวกัน ถ้าจำนวนเป็นเลขคี่ รายการสุดท้ายจะได้ "บาย" ผ่านเข้ารอบถัดไปฟรี
  */
 export function drawUnitBracket(result: ResultMap): BracketPair[] {

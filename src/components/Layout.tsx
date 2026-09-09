@@ -51,7 +51,7 @@ function Brand() {
       </div>
       <div className="min-w-0 leading-tight">
         <p className="truncate text-sm font-extrabold text-ink-900">TU Sport Day 2026</p>
-        <p className="truncate text-[11px] text-ink-400">ระบบสุ่มแบ่งสายกีฬาสี</p>
+        <p className="truncate text-[11px] text-ink-400">ระบบสุ่มจับคู่แข่งขันกีฬาสี</p>
       </div>
     </div>
   )
