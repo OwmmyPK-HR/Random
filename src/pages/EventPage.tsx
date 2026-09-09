@@ -10,7 +10,7 @@ import { ColorBracketView, UnitBracketView } from '../components/BracketView'
 import { ColorDot } from '../components/ColorBadge'
 import { DrawAnimation } from '../components/DrawAnimation'
 import { downloadSingleTemplate, exportEventResult, parseWorkbookFileForEvent } from '../utils/excel'
-import { groupRosterByColor } from '../utils/shuffle'
+import { entryLabel, groupRosterByColor } from '../utils/shuffle'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
 import {
   ArrowLeftIcon,
@@ -77,13 +77,14 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
 export function EventPage() {
   const { code = '' } = useParams()
   const ev = getEventByCode(code)
-  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, resetEvent } = useEventStore()
+  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, setMatchResult, resetEvent } = useEventStore()
   const { notify } = useToast()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [activeColor, setActiveColor] = useState<ColorName>('ฟ้า')
   const [quickAddText, setQuickAddText] = useState<Record<ColorName, string>>({ ฟ้า: '', ม่วง: '', ชมพู: '', เขียว: '' })
   const [confirmRedraw, setConfirmRedraw] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
+  const [confirmDeleteEntry, setConfirmDeleteEntry] = useState<{ id: string; label: string } | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
 
   const state = getEvent(code)
@@ -248,7 +249,13 @@ export function EventPage() {
   const rosterBoardSection = hasData && (
     <section className="space-y-3">
       <h2 className="font-bold text-mist-100">รายชื่อแยกตามสี</h2>
-      <ResultBoard result={grouped} onRemove={(id) => removeEntry(code, id)} />
+      <ResultBoard
+        result={grouped}
+        onRemove={(id) => {
+          const entry = state.roster.find((r) => r.id === id)
+          setConfirmDeleteEntry({ id, label: entry ? entryLabel(entry) : 'รายการนี้' })
+        }}
+      />
     </section>
   )
 
@@ -297,7 +304,13 @@ export function EventPage() {
       <h2 className="flex items-center gap-1.5 font-bold text-mist-100">
         <TrophyIcon size={17} className="text-accent" /> ผลการจับสลาก
       </h2>
-      {ev.mode === 'colorTeam' && state.colorBracket && <ColorBracketView matches={state.colorBracket} />}
+      {ev.mode === 'colorTeam' && state.colorBracket && (
+        <ColorBracketView
+          matches={state.colorBracket}
+          results={state.matchResults ?? {}}
+          onSetResult={(a, b, outcome) => setMatchResult(code, a, b, outcome)}
+        />
+      )}
       {ev.mode === 'bracket' && state.unitBracket && <UnitBracketView pairs={state.unitBracket} />}
     </section>
   )
@@ -382,6 +395,18 @@ export function EventPage() {
           setConfirmClear(false)
           setRoster(code, [])
           resetEvent(code)
+        }}
+      />
+      <ConfirmDialog
+        open={!!confirmDeleteEntry}
+        title="ลบรายชื่อนี้?"
+        message={`ลบ "${confirmDeleteEntry?.label ?? ''}" ออกจากรายชื่อ${hasBracket ? ' (ผลจับสลากเดิมจะถูกล้างไปด้วย ต้องจับสลากใหม่)' : ''}`}
+        confirmLabel="ลบ"
+        danger
+        onCancel={() => setConfirmDeleteEntry(null)}
+        onConfirm={() => {
+          if (confirmDeleteEntry) removeEntry(code, confirmDeleteEntry.id)
+          setConfirmDeleteEntry(null)
         }}
       />
     </div>

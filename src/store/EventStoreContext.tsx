@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { EventState, RosterEntry, StoreShape } from '../types'
+import type { ColorName, EventState, MatchOutcome, RosterEntry, StoreShape } from '../types'
 import { getEventByCode } from '../data/events'
 import { drawRoundRobin, drawUnitBracket, groupRosterByColor } from '../utils/shuffle'
+import { matchKey } from '../utils/standings'
 import { loadStore, saveStore, clearStore } from '../utils/storage'
 
 interface Ctx {
@@ -12,8 +13,10 @@ interface Ctx {
   removeEntry: (code: string, id: string) => void
   bulkSetRoster: (rosters: Record<string, RosterEntry[]>, mode: 'replace' | 'merge') => void
   drawBracket: (code: string) => void
+  setMatchResult: (code: string, a: ColorName, b: ColorName, outcome: MatchOutcome | null) => void
   resetEvent: (code: string) => void
   resetAll: () => void
+  replaceStore: (next: StoreShape) => void
 }
 
 const EMPTY: EventState = { roster: [] }
@@ -32,7 +35,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
   const setRoster = useCallback((code: string, roster: RosterEntry[]) => {
     setStore((prev) => ({
       ...prev,
-      [code]: { roster, colorBracket: undefined, unitBracket: undefined, drawnAt: undefined },
+      [code]: { roster, colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined },
     }))
   }, [])
 
@@ -43,6 +46,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       [code]: {
         roster: [...(prev[code]?.roster ?? []), ...entries],
         colorBracket: undefined,
+        matchResults: undefined,
         unitBracket: undefined,
         drawnAt: undefined,
       },
@@ -55,6 +59,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       [code]: {
         roster: (prev[code]?.roster ?? []).filter((r) => r.id !== id),
         colorBracket: undefined,
+        matchResults: undefined,
         unitBracket: undefined,
         drawnAt: undefined,
       },
@@ -66,9 +71,16 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       const next = { ...prev }
       for (const [code, roster] of Object.entries(rosters)) {
         if (mode === 'merge' && next[code]?.roster?.length) {
-          next[code] = { ...next[code], roster: [...next[code].roster, ...roster], colorBracket: undefined, unitBracket: undefined, drawnAt: undefined }
+          next[code] = {
+            ...next[code],
+            roster: [...next[code].roster, ...roster],
+            colorBracket: undefined,
+            matchResults: undefined,
+            unitBracket: undefined,
+            drawnAt: undefined,
+          }
         } else {
-          next[code] = { roster, colorBracket: undefined, unitBracket: undefined, drawnAt: undefined }
+          next[code] = { roster, colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined }
         }
       }
       return next
@@ -88,15 +100,34 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       const unitBracket = ev.mode === 'bracket' ? drawUnitBracket(grouped) : undefined
       return {
         ...prev,
-        [code]: { roster, colorBracket, unitBracket, drawnAt: new Date().toISOString() },
+        [code]: { roster, colorBracket, matchResults: undefined, unitBracket, drawnAt: new Date().toISOString() },
       }
+    })
+  }, [])
+
+  /** บันทึก/ล้างผลนัดพบกันหมด 1 คู่ (ใช้กับกีฬาแบ่งตามสีทีม) — ส่ง outcome เป็น null เพื่อล้างผลนัดนั้น */
+  const setMatchResult = useCallback((code: string, a: ColorName, b: ColorName, outcome: MatchOutcome | null) => {
+    setStore((prev) => {
+      const current = prev[code]
+      if (!current) return prev
+      const key = matchKey(a, b)
+      const results = { ...(current.matchResults ?? {}) }
+      if (outcome === null) delete results[key]
+      else results[key] = outcome
+      return { ...prev, [code]: { ...current, matchResults: results } }
     })
   }, [])
 
   const resetEvent = useCallback((code: string) => {
     setStore((prev) => ({
       ...prev,
-      [code]: { roster: prev[code]?.roster ?? [], colorBracket: undefined, unitBracket: undefined, drawnAt: undefined },
+      [code]: {
+        roster: prev[code]?.roster ?? [],
+        colorBracket: undefined,
+        matchResults: undefined,
+        unitBracket: undefined,
+        drawnAt: undefined,
+      },
     }))
   }, [])
 
@@ -105,9 +136,26 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     setStore({})
   }, [])
 
+  /** แทนที่ข้อมูลทั้งหมดในระบบด้วยไฟล์สำรองที่นำเข้ามา (ใช้กับฟีเจอร์กู้คืนข้อมูลสำรอง) */
+  const replaceStore = useCallback((next: StoreShape) => {
+    setStore(next)
+  }, [])
+
   const value = useMemo<Ctx>(
-    () => ({ store, getEvent, setRoster, addEntries, removeEntry, bulkSetRoster, drawBracket, resetEvent, resetAll }),
-    [store, getEvent, setRoster, addEntries, removeEntry, bulkSetRoster, drawBracket, resetEvent, resetAll],
+    () => ({
+      store,
+      getEvent,
+      setRoster,
+      addEntries,
+      removeEntry,
+      bulkSetRoster,
+      drawBracket,
+      setMatchResult,
+      resetEvent,
+      resetAll,
+      replaceStore,
+    }),
+    [store, getEvent, setRoster, addEntries, removeEntry, bulkSetRoster, drawBracket, setMatchResult, resetEvent, resetAll, replaceStore],
   )
 
   return <EventStoreCtx.Provider value={value}>{children}</EventStoreCtx.Provider>

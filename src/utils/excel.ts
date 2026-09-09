@@ -3,6 +3,7 @@ import { EVENTS, getEventByCode } from '../data/events'
 import { COLORS } from '../types'
 import type { BracketPair, EntryShape, EventState, ResultMap, RosterEntry, SportEvent, StoreShape } from '../types'
 import { groupRosterByColor } from './shuffle'
+import { computeStandings, isRoundRobinComplete, matchKey } from './standings'
 
 // แต่ละสีมีคอลัมน์ของตัวเอง เรียงติดกัน 4 บล็อก (ฟ้า | ม่วง | ชมพู | เขียว)
 // ผู้ใช้กรอกรายชื่อของสีไหนก็ลงคอลัมน์ของสีนั้นโดยตรง ไม่ต้องพิมพ์ชื่อสีเอง — จำนวนแต่ละสีไม่ต้องเท่ากัน
@@ -204,15 +205,37 @@ function bracketSheet(ev: SportEvent, state: EventState): XLSX.WorkSheet {
   const aoa: (string | number)[][] = [['ผลการจับสลาก']]
   aoa.push([])
   if (ev.mode === 'colorTeam' && state.colorBracket) {
+    const results = state.matchResults ?? {}
     aoa.push(['รอบแบ่งกลุ่ม (พบกันหมด) — ทุกสีเจอกันอย่างน้อย 1 ครั้ง'])
-    aoa.push(['นัดที่', 'ทีมสี 1', '', 'ทีมสี 2'])
+    aoa.push(['นัดที่', 'ทีมสี 1', '', 'ทีมสี 2', 'ผล'])
     state.colorBracket.forEach(([a, b], i) => {
-      aoa.push([i + 1, `สี${a}`, 'vs', `สี${b}`])
+      const outcome = results[matchKey(a, b)]
+      const outcomeLabel = !outcome ? 'ยังไม่แข่ง' : outcome === 'draw' ? 'เสมอ' : `สี${outcome} ชนะ`
+      aoa.push([i + 1, `สี${a}`, 'vs', `สี${b}`, outcomeLabel])
     })
+
+    const complete = isRoundRobinComplete(state.colorBracket, results)
+    const standings = computeStandings(state.colorBracket, results)
+    if (Object.keys(results).length > 0) {
+      aoa.push([])
+      aoa.push(['ตารางคะแนน', '', 'แข่ง', 'ชนะ', 'เสมอ', 'แพ้', 'คะแนน'])
+      standings.forEach((s) => aoa.push([`สี${s.color}`, '', s.played, s.won, s.drawn, s.lost, s.points]))
+    }
+
     aoa.push([])
-    aoa.push(['รอบชิงอันดับ (รอผลรอบแบ่งกลุ่มก่อนถึงจะรู้คู่แข่ง)'])
-    aoa.push(['ชิงอันดับ 3', 'อันดับ 3 กลุ่ม', 'vs', 'อันดับ 4 กลุ่ม'])
-    aoa.push(['ชิงชนะเลิศ', 'อันดับ 1 กลุ่ม', 'vs', 'อันดับ 2 กลุ่ม'])
+    aoa.push(['รอบชิงอันดับ' + (complete ? '' : ' (รอผลรอบแบ่งกลุ่มก่อนถึงจะรู้คู่แข่ง)')])
+    aoa.push([
+      'ชิงอันดับ 3',
+      complete ? `สี${standings[2].color}` : 'อันดับ 3 กลุ่ม',
+      'vs',
+      complete ? `สี${standings[3].color}` : 'อันดับ 4 กลุ่ม',
+    ])
+    aoa.push([
+      'ชิงชนะเลิศ',
+      complete ? `สี${standings[0].color}` : 'อันดับ 1 กลุ่ม',
+      'vs',
+      complete ? `สี${standings[1].color}` : 'อันดับ 2 กลุ่ม',
+    ])
   } else if (state.unitBracket) {
     aoa.push(['คู่ที่', 'ผู้แข่งขัน / ทีม 1', 'สี', '', 'ผู้แข่งขัน / ทีม 2', 'สี'])
     state.unitBracket.forEach((p: BracketPair, i: number) => {
