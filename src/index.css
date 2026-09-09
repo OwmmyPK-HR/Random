@@ -104,3 +104,30 @@ body {
     border-radius: 9999px;
   }
 }
+
+/* โหมดพิมพ์ — ซ่อนเมนู/ปุ่มที่ไม่เกี่ยวข้อง บังคับพื้นขาวตัวอักษรดำเพื่อประหยัดหมึก ไม่ว่าจะเปิดโหมดมืดอยู่หรือไม่ */
+@media print {
+  header,
+  aside,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .shadow-soft,
+  .shadow-card,
+  .shadow-pop,
+  .shadow-glowAccent {
+    box-shadow: none !important;
+  }
+  a[href]::after {
+    content: '';
+  }
+}

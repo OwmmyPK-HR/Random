@@ -43,7 +43,7 @@ function OutcomePicker({
     }`
 
   return (
-    <div className="mt-2 flex items-center justify-center gap-1.5">
+    <div className="no-print mt-2 flex items-center justify-center gap-1.5">
       <button
         onClick={() => onPick(outcome === a ? null : a)}
         className={pill(outcome === a)}

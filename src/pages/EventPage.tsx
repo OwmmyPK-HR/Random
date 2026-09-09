@@ -18,6 +18,7 @@ import {
   DiceIcon,
   DownloadIcon,
   PencilIcon,
+  PrinterIcon,
   TrashIcon,
   TrophyIcon,
 } from '../components/Icons'
@@ -157,7 +158,7 @@ export function EventPage() {
   }
 
   const rosterSection = (
-    <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+    <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="font-bold text-mist-100">
@@ -260,7 +261,7 @@ export function EventPage() {
   )
 
   const drawSection = (
-    <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+    <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
       <button
         onClick={() => (hasBracket ? setConfirmRedraw(true) : doDraw())}
         disabled={!canDraw || isDrawing}
@@ -317,29 +318,40 @@ export function EventPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link to={`/sport/${ev.groupSlug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
-          <ArrowLeftIcon size={13} /> {ev.sportGroup}
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-extrabold text-mist-100">{ev.name}</h1>
-          <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-mist-400">{headline}</span>
-          {isColorTeam && (
-            <span className="rounded-full bg-team-blue/15 px-2.5 py-0.5 text-xs font-semibold text-team-blue-soft">แบ่งตามสีทีม</span>
-          )}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link to={`/sport/${ev.groupSlug}`} className="no-print inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
+            <ArrowLeftIcon size={13} /> {ev.sportGroup}
+          </Link>
+          <p className="hidden text-xs font-semibold text-mist-500 print:block">{ev.sportGroup}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-mist-100">{ev.name}</h1>
+            <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-mist-400">{headline}</span>
+            {isColorTeam && (
+              <span className="rounded-full bg-team-blue/15 px-2.5 py-0.5 text-xs font-semibold text-team-blue-soft">แบ่งตามสีทีม</span>
+            )}
+          </div>
         </div>
+        {hasBracket && (
+          <button
+            onClick={() => window.print()}
+            className="no-print inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
+          >
+            <PrinterIcon size={15} /> พิมพ์ผล
+          </button>
+        )}
       </div>
 
       {/* STEP TRACKER */}
       {isColorTeam ? (
-        <div className="flex items-center gap-2 rounded-2xl border border-surface-border bg-surface-card px-4 py-3 shadow-soft">
+        <div className="no-print flex items-center gap-2 rounded-2xl border border-surface-border bg-surface-card px-4 py-3 shadow-soft">
           <StepBadge n={1} active={!hasBracket} done={hasBracket} />
           <span className="text-xs font-semibold text-mist-100">
             จับสลากตารางแข่งขันแบบพบกันหมด (4 สี) — ไม่ต้องมีรายชื่อนักกีฬาก็จับได้เลย
           </span>
         </div>
       ) : (
-        <div className="flex items-center gap-2 rounded-2xl border border-surface-border bg-surface-card px-4 py-3 shadow-soft">
+        <div className="no-print flex items-center gap-2 rounded-2xl border border-surface-border bg-surface-card px-4 py-3 shadow-soft">
           <StepBadge n={1} active={!hasData} done={hasData} />
           <span className={`text-xs font-semibold ${hasData ? 'text-mist-300' : 'text-mist-100'}`}>รายชื่อนักกีฬา (แยกตามสี)</span>
           <div className={`mx-1 h-0.5 flex-1 rounded ${hasData ? 'bg-team-green/60' : 'bg-surface-raised'}`} />

@@ -20,6 +20,14 @@ function Base({ size = 20, children, ...props }: IconProps & { children: React.R
   )
 }
 
+export const PrinterIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M6 9V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5" />
+    <rect x="4" y="9" width="16" height="8" rx="1.5" />
+    <path d="M6 14h12v6a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-6Z" />
+  </Base>
+)
+
 export const SearchIcon = (p: IconProps) => (
   <Base {...p}>
     <circle cx="11" cy="11" r="6.5" />
