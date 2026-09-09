@@ -7,8 +7,8 @@ html {
 }
 
 body {
-  background-color: #f6f7fb;
-  color: #0f172a;
+  background-color: #f7f7fa;
+  color: #181a26;
 }
 
 ::selection {
@@ -16,16 +16,31 @@ body {
   color: #fff;
 }
 
+*:focus-visible {
+  outline: 2px solid #9333ea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 @layer utilities {
   .bg-stripe {
-    background-image: linear-gradient(90deg, #2563eb 0 25%, #7c3aed 25% 50%, #db2777 50% 75%, #16a34a 75% 100%);
+    background-image: linear-gradient(90deg, #0284c7 0 25%, #9333ea 25% 50%, #db2777 50% 75%, #16a34a 75% 100%);
+  }
+  .bg-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0) 35%,
+      rgba(255, 255, 255, 0.75) 50%,
+      rgba(255, 255, 255, 0) 65%
+    );
+    background-size: 300% 100%;
   }
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
     width: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    background-color: #dfe0e8;
     border-radius: 9999px;
   }
 }

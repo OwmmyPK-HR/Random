@@ -6,6 +6,8 @@ import { useEventStore } from '../store/EventStoreContext'
 import { useToast } from '../store/ToastContext'
 import { exportAllResults } from '../utils/excel'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ColorDistributionBar } from '../components/ColorDistributionBar'
+import { CheckCircleIcon, ClockIcon, DownloadIcon, TrashIcon } from '../components/Icons'
 
 export function SummaryPage() {
   const { store, resetAll } = useEventStore()
@@ -13,98 +15,97 @@ export function SummaryPage() {
   const [confirmReset, setConfirmReset] = useState(false)
 
   const randomizedTotal = EVENTS.filter((ev) => store[ev.code]?.result).length
-  const colorTotals = COLORS.map((c) => EVENTS.reduce((sum, ev) => sum + (store[ev.code]?.result?.[c]?.length ?? 0), 0))
+  const colorCounts = Object.fromEntries(
+    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + (store[ev.code]?.result?.[c]?.length ?? 0), 0)]),
+  ) as Record<(typeof COLORS)[number], number>
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">สรุปผล &amp; ส่งออก</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-extrabold text-ink-900">สรุปผล &amp; ส่งออก</h1>
+          <p className="text-sm text-ink-400">
             สุ่มแล้ว {randomizedTotal}/{EVENTS.length} รายการ
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => exportAllResults(store)}
-            className="rounded-xl bg-tu-maroon px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-tu-maroon/90"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-card"
           >
-            ⬇ ส่งออกสรุปผลทั้งหมด (Excel)
+            <DownloadIcon size={16} /> ส่งออกสรุปผลทั้งหมด (Excel)
           </button>
           <button
             onClick={() => setConfirmReset(true)}
-            className="rounded-xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
           >
-            ล้างข้อมูลทั้งหมด
+            <TrashIcon size={15} /> ล้างข้อมูลทั้งหมด
           </button>
         </div>
       </div>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {COLORS.map((c, i) => {
-          const theme = COLOR_THEME[c]
-          return (
-            <div key={c} className="rounded-2xl border p-4 shadow-soft" style={{ borderColor: theme.light, backgroundColor: theme.light }}>
-              <p className="text-xs font-semibold" style={{ color: theme.dark }}>
-                สี{c}
-              </p>
-              <p className="mt-1 text-2xl font-extrabold" style={{ color: theme.dark }}>
-                {colorTotals[i].toLocaleString('th-TH')}
-                <span className="ml-1 text-sm font-medium opacity-70">รายการ</span>
-              </p>
-            </div>
-          )
-        })}
+      <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+        <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (รวมทุกประเภทที่สุ่มแล้ว)</h2>
+        <div className="mt-4">
+          <ColorDistributionBar counts={colorCounts} />
+        </div>
       </section>
 
-      <section className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-soft">
-        <table className="w-full min-w-[720px] text-sm">
+      <section className="overflow-x-auto rounded-2xl border border-ink-100 bg-white shadow-soft">
+        <table className="w-full min-w-[760px] text-sm">
           <thead>
-            <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <tr className="border-b border-ink-100 text-left text-[11px] font-bold uppercase tracking-wide text-ink-400">
               <th className="px-4 py-3">หมวดกีฬา</th>
               <th className="px-4 py-3">รายการ</th>
               <th className="px-4 py-3">เงื่อนไข</th>
               {COLORS.map((c) => (
                 <th key={c} className="px-3 py-3 text-center">
-                  {c}
+                  <span className="inline-flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLOR_THEME[c].base }} />
+                    {c}
+                  </span>
                 </th>
               ))}
               <th className="px-4 py-3 text-center">สถานะ</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-ink-50">
             {SPORT_GROUPS.map((g) =>
               g.events.map((ev, idx) => {
                 const state = store[ev.code]
                 const result = state?.result
                 return (
-                  <tr key={ev.code} className="hover:bg-slate-50">
+                  <tr key={ev.code} className="hover:bg-ink-50/60">
                     {idx === 0 && (
-                      <td className="px-4 py-2.5 align-top font-semibold text-slate-700" rowSpan={g.events.length}>
+                      <td className="px-4 py-2.5 align-top font-semibold text-ink-700" rowSpan={g.events.length}>
                         {g.name}
                       </td>
                     )}
                     <td className="px-4 py-2.5">
-                      <Link to={`/event/${ev.code}`} className="font-medium text-slate-800 hover:text-tu-maroon">
+                      <Link to={`/event/${ev.code}`} className="font-medium text-ink-800 hover:text-brand-600">
                         {ev.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                    <td className="px-4 py-2.5 text-xs text-ink-400">
                       {ev.genderLabel}
                       {ev.ageLabel ? ` · ${ev.ageLabel}` : ''}
                     </td>
                     {COLORS.map((c) => (
-                      <td key={c} className="px-3 py-2.5 text-center text-xs font-semibold text-slate-600">
+                      <td key={c} className="px-3 py-2.5 text-center text-xs font-semibold text-ink-600">
                         {result?.[c]?.length ?? '-'}
                       </td>
                     ))}
                     <td className="px-4 py-2.5 text-center">
                       {result ? (
-                        <span className="rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">สุ่มแล้ว</span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-bold text-green-700">
+                          <CheckCircleIcon size={11} /> สุ่มแล้ว
+                        </span>
                       ) : state?.roster?.length ? (
-                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">รอสุ่ม</span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/10 px-2 py-0.5 text-[11px] font-bold text-gold-600">
+                          <ClockIcon size={11} /> รอสุ่ม
+                        </span>
                       ) : (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">ไม่มีข้อมูล</span>
+                        <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-400">ไม่มีข้อมูล</span>
                       )}
                     </td>
                   </tr>

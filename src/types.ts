@@ -2,14 +2,16 @@
 export const COLORS = ['ฟ้า', 'ม่วง', 'ชมพู', 'เขียว'] as const
 export type ColorName = (typeof COLORS)[number]
 
+// สีผ่านการตรวจสอบด้วย dataviz palette validator (CVD deutan/tritan separation +
+// normal-vision floor) ในลำดับคงที่ ฟ้า→ม่วง→ชมพู→เขียว — ดู palette validation ในบันทึกงาน
 export const COLOR_THEME: Record<
   ColorName,
-  { base: string; light: string; dark: string; text: string }
+  { base: string; soft: string; light: string; dark: string; text: string; ring: string }
 > = {
-  ฟ้า: { base: '#2563EB', light: '#DBEAFE', dark: '#1E3A8A', text: '#1E3A8A' },
-  ม่วง: { base: '#7C3AED', light: '#EDE3FE', dark: '#4C1D95', text: '#4C1D95' },
-  ชมพู: { base: '#DB2777', light: '#FCE3EF', dark: '#831843', text: '#831843' },
-  เขียว: { base: '#16A34A', light: '#DCFCE7', dark: '#14532D', text: '#14532D' },
+  ฟ้า: { base: '#0284C7', soft: '#38BDF8', light: '#E0F2FE', dark: '#075985', text: '#075985', ring: '#7DD3FC' },
+  ม่วง: { base: '#9333EA', soft: '#C084FC', light: '#F3E8FF', dark: '#6B21A8', text: '#6B21A8', ring: '#D8B4FE' },
+  ชมพู: { base: '#DB2777', soft: '#F472B6', light: '#FCE7F3', dark: '#9D174D', text: '#9D174D', ring: '#F9A8D4' },
+  เขียว: { base: '#16A34A', soft: '#4ADE80', light: '#DCFCE7', dark: '#166534', text: '#166534', ring: '#86EFAC' },
 }
 
 // ----- รูปแบบข้อมูลผู้สมัคร (ตามชนิดของประเภทกีฬา) -----

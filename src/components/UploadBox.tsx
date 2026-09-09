@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { UploadIcon } from './Icons'
 
 export function UploadBox({ onFile, label }: { onFile: (file: File) => void; label?: string }) {
   const [dragOver, setDragOver] = useState(false)
@@ -22,21 +23,15 @@ export function UploadBox({ onFile, label }: { onFile: (file: File) => void; lab
         handleFiles(e.dataTransfer.files)
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
-        dragOver ? 'border-tu-maroon bg-tu-maroon/5' : 'border-slate-300 bg-slate-50 hover:border-slate-400'
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all ${
+        dragOver ? 'scale-[1.01] border-brand-600 bg-brand-50' : 'border-ink-200 bg-ink-50/60 hover:border-ink-300 hover:bg-ink-50'
       }`}
     >
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="text-slate-400">
-        <path
-          d="M12 16V4m0 0L7 9m5-5l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p className="text-sm font-medium text-slate-700">{label ?? 'ลากไฟล์ Excel มาวาง หรือคลิกเพื่อเลือกไฟล์'}</p>
-      <p className="text-xs text-slate-400">รองรับไฟล์ .xlsx / .xls</p>
+      <div className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${dragOver ? 'bg-brand-600 text-white' : 'bg-white text-ink-400 shadow-soft'}`}>
+        <UploadIcon size={20} />
+      </div>
+      <p className="text-sm font-semibold text-ink-700">{label ?? 'ลากไฟล์ Excel มาวาง หรือคลิกเพื่อเลือกไฟล์'}</p>
+      <p className="text-xs text-ink-400">รองรับไฟล์ .xlsx / .xls</p>
       <input
         ref={inputRef}
         type="file"

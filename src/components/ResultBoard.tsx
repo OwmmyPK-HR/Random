@@ -8,6 +8,11 @@ function entryLabel(entry: RosterEntry): { main: string; sub?: string } {
   return { main: names.join(' - ') }
 }
 
+function initials(text: string): string {
+  const t = text.trim()
+  return t ? t[0] : '·'
+}
+
 export function ResultBoard({ result }: { result: ResultMap }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -17,31 +22,35 @@ export function ResultBoard({ result }: { result: ResultMap }) {
         return (
           <div
             key={color}
-            className="animate-popIn rounded-2xl border bg-white shadow-soft overflow-hidden"
-            style={{ borderColor: theme.light, animationDelay: `${colIdx * 80}ms` }}
+            className="animate-popIn overflow-hidden rounded-2xl border bg-white shadow-soft"
+            style={{ borderColor: theme.light, animationDelay: `${colIdx * 90}ms` }}
           >
-            <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: theme.light }}>
-              <span className="font-bold" style={{ color: theme.dark }}>
-                สี{color}
-              </span>
-              <span
-                className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
-                style={{ backgroundColor: theme.base }}
-              >
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})` }}
+            >
+              <span className="font-extrabold text-white drop-shadow-sm">สี{color}</span>
+              <span className="rounded-full bg-white/25 px-2.5 py-0.5 text-xs font-extrabold text-white ring-1 ring-inset ring-white/40">
                 {entries.length} รายการ
               </span>
             </div>
-            <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto scrollbar-thin">
-              {entries.length === 0 && <li className="px-4 py-6 text-center text-sm text-slate-400">ไม่มีรายการ</li>}
+            <ul className="max-h-80 divide-y divide-ink-50 overflow-y-auto scrollbar-thin">
+              {entries.length === 0 && <li className="px-4 py-6 text-center text-sm text-ink-300">ไม่มีรายการ</li>}
               {entries.map((entry, i) => {
                 const { main, sub } = entryLabel(entry)
                 return (
-                  <li key={entry.id} className="flex items-start gap-2 px-4 py-2 text-sm">
-                    <span className="mt-0.5 shrink-0 text-xs font-semibold text-slate-400">{i + 1}.</span>
-                    <span>
-                      <span className="font-medium text-slate-800">{main}</span>
-                      {sub && <span className="block text-xs text-slate-400">{sub}</span>}
+                  <li key={entry.id} className="flex items-center gap-2.5 px-3.5 py-2 text-sm">
+                    <span
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                      style={{ backgroundColor: theme.light, color: theme.dark }}
+                    >
+                      {initials(main)}
                     </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-ink-800">{main}</span>
+                      {sub && <span className="block truncate text-xs text-ink-400">{sub}</span>}
+                    </span>
+                    <span className="ml-auto shrink-0 text-[11px] font-semibold text-ink-300">{i + 1}</span>
                   </li>
                 )
               })}

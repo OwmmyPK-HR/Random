@@ -1,19 +1,30 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { SPORT_GROUPS } from '../data/events'
+import { EVENTS, SPORT_GROUPS } from '../data/events'
+import { COLORS } from '../types'
 import { useEventStore } from '../store/EventStoreContext'
 import { useToast } from '../store/ToastContext'
 import { downloadAllTemplates, exportAllResults, parseWorkbookFile } from '../utils/excel'
 import { eventsWithDataCount, randomizedCount, totalHeadcount } from '../utils/stats'
+import { ColorDistributionBar } from '../components/ColorDistributionBar'
+import {
+  ChartIcon,
+  CheckCircleIcon,
+  DownloadIcon,
+  SPORT_ICON,
+  TrophyIcon,
+  UploadIcon,
+  UsersIcon,
+} from '../components/Icons'
 
-const GROUP_META: Record<string, { emoji: string; blurb: string }> = {
-  เทนนิส: { emoji: '🎾', blurb: 'ทีม / เดี่ยว / คู่ / คู่ผสม' },
-  ฟุตบอล: { emoji: '⚽', blurb: 'ทีมชาย แบ่งตามสีทีม' },
-  ฟุตซอล: { emoji: '🥅', blurb: 'ทีมชาย แบ่งตามสีทีม' },
-  วอลเลย์บอล: { emoji: '🏐', blurb: 'ทีมชาย / ทีมหญิง' },
-  บาสเกตบอล: { emoji: '🏀', blurb: 'ทีมชาย / ทีมหญิง' },
-  แบดมินตัน: { emoji: '🏸', blurb: 'คู่ทุกรุ่นอายุ / คู่ผสม' },
-  เปตอง: { emoji: '🥎', blurb: 'เดี่ยว / คู่ / ทีม 3 คน' },
+const GROUP_BLURB: Record<string, string> = {
+  เทนนิส: 'ทีม · เดี่ยว · คู่ · คู่ผสม',
+  ฟุตบอล: 'ทีมชาย แบ่งตามสีทีม',
+  ฟุตซอล: 'ทีมชาย แบ่งตามสีทีม',
+  วอลเลย์บอล: 'ทีมชาย · ทีมหญิง',
+  บาสเกตบอล: 'ทีมชาย · ทีมหญิง',
+  แบดมินตัน: 'คู่ทุกรุ่นอายุ · คู่ผสม',
+  เปตอง: 'เดี่ยว · คู่ · ทีม 3 คน',
 }
 
 export function HomePage() {
@@ -21,10 +32,14 @@ export function HomePage() {
   const { notify } = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const totalEvents = SPORT_GROUPS.reduce((s, g) => s + g.events.length, 0)
+  const totalEvents = EVENTS.length
   const withData = eventsWithDataCount(store)
   const randomized = randomizedCount(store)
   const heads = totalHeadcount(store)
+
+  const colorCounts = Object.fromEntries(
+    COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + (store[ev.code]?.result?.[c]?.length ?? 0), 0)]),
+  ) as Record<(typeof COLORS)[number], number>
 
   const handleBulkFile = async (file: File) => {
     try {
@@ -47,81 +62,107 @@ export function HomePage() {
 
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-tu-maroon to-[#4a1219] p-6 text-white shadow-card sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-white/70">TU Sport Day 2026</p>
-        <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">ระบบสุ่มแบ่งสายกีฬาสี</h1>
-        <p className="mt-2 max-w-2xl text-sm text-white/80">
-          อัปโหลดรายชื่อนักกีฬาผ่านฟอร์ม Excel แล้วสุ่มแบ่งเข้า 4 สี — ฟ้า ม่วง ชมพู เขียว — พร้อมจับสายแข่งขันรอบแรก
-          (Seed 1) อัตโนมัติ ทำงานบนเบราว์เซอร์ทั้งหมด ไม่ต้องมีเซิร์ฟเวอร์
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2.5">
-          <button
-            onClick={() => downloadAllTemplates(store)}
-            className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-tu-maroon shadow-sm transition hover:bg-white/90"
-          >
-            ⬇ ดาวน์โหลดฟอร์ม Excel (ทุกประเภท)
-          </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-inset ring-white/40 transition hover:bg-white/20"
-          >
-            ⬆ อัปโหลดไฟล์รวม
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) handleBulkFile(f)
-              e.target.value = ''
-            }}
-          />
-          <Link
-            to="/summary"
-            className="rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-inset ring-white/40 transition hover:bg-white/20"
-          >
-            📊 สรุปผล &amp; ส่งออก
-          </Link>
+      {/* HERO */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-600 to-brand-800 p-6 text-white shadow-pop sm:p-10">
+        <div className="pointer-events-none absolute inset-0 opacity-[0.15]">
+          <div className="absolute -right-10 -top-20 h-72 w-72 rounded-full bg-gold-400 blur-3xl" />
+          <div className="absolute -bottom-24 left-10 h-64 w-64 rounded-full bg-team-blue blur-3xl" />
+        </div>
+        <div className="relative">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/80 ring-1 ring-inset ring-white/20">
+            <TrophyIcon size={13} /> TU Sport Day 2026
+          </span>
+          <h1 className="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl">
+            ระบบสุ่มแบ่งสายกีฬาสี
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/80 sm:text-[15px]">
+            อัปโหลดรายชื่อนักกีฬาผ่านฟอร์ม Excel แล้วสุ่มแบ่งเข้า 4 สี — ฟ้า ม่วง ชมพู เขียว — อย่างเป็นธรรม
+            พร้อมจับสายแข่งขันรอบแรก (Seed 1) ให้อัตโนมัติ ทำงานบนเบราว์เซอร์ทั้งหมด ไม่ต้องมีเซิร์ฟเวอร์
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            <button
+              onClick={() => downloadAllTemplates(store)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:shadow-card"
+            >
+              <DownloadIcon size={16} /> ดาวน์โหลดฟอร์ม Excel (ทุกประเภท)
+            </button>
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-bold text-white ring-1 ring-inset ring-white/30 transition hover:bg-white/20"
+            >
+              <UploadIcon size={16} /> อัปโหลดไฟล์รวม
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".xlsx,.xls"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleBulkFile(f)
+                e.target.value = ''
+              }}
+            />
+            <Link
+              to="/summary"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-bold text-white ring-1 ring-inset ring-white/30 transition hover:bg-white/20"
+            >
+              <ChartIcon size={16} /> สรุปผล &amp; ส่งออก
+            </Link>
+          </div>
         </div>
       </section>
 
+      {/* STATS */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="ประเภทกีฬาทั้งหมด" value={totalEvents} />
-        <StatTile label="มีข้อมูลนักกีฬาแล้ว" value={withData} suffix={`/ ${totalEvents}`} />
-        <StatTile label="สุ่มแบ่งสีแล้ว" value={randomized} suffix={`/ ${totalEvents}`} accent />
-        <StatTile label="นักกีฬารวม (โดยประมาณ)" value={heads} suffix="คน" />
+        <StatTile icon={<TrophyIcon size={17} />} label="ประเภทกีฬาทั้งหมด" value={totalEvents} />
+        <StatTile icon={<UsersIcon size={17} />} label="มีข้อมูลนักกีฬาแล้ว" value={withData} suffix={`/ ${totalEvents}`} />
+        <StatTile icon={<CheckCircleIcon size={17} />} label="สุ่มแบ่งสีแล้ว" value={randomized} suffix={`/ ${totalEvents}`} accent />
+        <StatTile icon={<UsersIcon size={17} />} label="นักกีฬารวม (โดยประมาณ)" value={heads} suffix="คน" />
       </section>
 
+      {/* COLOR DISTRIBUTION */}
+      {randomized > 0 && (
+        <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+          <h2 className="text-sm font-bold text-ink-900">สัดส่วนนักกีฬาแต่ละสี (จากรายการที่สุ่มแล้ว)</h2>
+          <div className="mt-4">
+            <ColorDistributionBar counts={colorCounts} />
+          </div>
+        </section>
+      )}
+
+      {/* SPORT GROUPS */}
       <section>
-        <h2 className="mb-3 text-lg font-bold text-slate-900">ประเภทกีฬา</h2>
+        <h2 className="mb-3 text-lg font-bold text-ink-900">ประเภทกีฬา</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SPORT_GROUPS.map((g) => {
             const done = g.events.filter((ev) => store[ev.code]?.result).length
-            const meta = GROUP_META[g.name]
+            const Icon = SPORT_ICON[g.name]
+            const pct = g.events.length ? (done / g.events.length) * 100 : 0
             return (
               <Link
                 key={g.slug}
                 to={`/sport/${g.slug}`}
-                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card"
+                className="group flex flex-col justify-between rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition-all hover:-translate-y-1 hover:shadow-card"
               >
                 <div>
-                  <span className="text-3xl">{meta?.emoji ?? '🏆'}</span>
-                  <h3 className="mt-2 font-bold text-slate-900 group-hover:text-tu-maroon">{g.name}</h3>
-                  <p className="text-xs text-slate-400">{meta?.blurb}</p>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                    {Icon && <Icon size={22} />}
+                  </div>
+                  <h3 className="mt-3 font-bold text-ink-900 group-hover:text-brand-600">{g.name}</h3>
+                  <p className="text-xs text-ink-400">{GROUP_BLURB[g.name]}</p>
                 </div>
-                <div className="mt-4">
-                  <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-500">
+                <div className="mt-5">
+                  <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-ink-500">
                     <span>{g.events.length} รายการ</span>
-                    <span>
+                    <span className={pct === 100 ? 'text-green-600' : ''}>
                       สุ่มแล้ว {done}/{g.events.length}
                     </span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-ink-100">
                     <div
-                      className="h-full rounded-full bg-tu-maroon transition-all"
-                      style={{ width: `${g.events.length ? (done / g.events.length) * 100 : 0}%` }}
+                      className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-green-500' : 'bg-brand-600'}`}
+                      style={{ width: `${pct}%` }}
                     />
                   </div>
                 </div>
@@ -131,17 +172,27 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500">
-        <p className="font-semibold text-slate-700">วิธีใช้งาน</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>ดาวน์โหลดฟอร์ม Excel รวมทุกประเภท กรอกรายชื่อนักกีฬาในแต่ละชีตให้ครบ (ไม่ต้องแก้ชื่อหัวตาราง)</li>
-          <li>อัปโหลดไฟล์เดิมกลับเข้าระบบ ข้อมูลจะกระจายเข้าแต่ละประเภทกีฬาให้อัตโนมัติ</li>
-          <li>เข้าไปที่แต่ละประเภทกีฬา กดปุ่ม “สุ่มแบ่งสี” เพื่อสุ่มอย่างเป็นธรรม (จำนวนแต่ละสีต่างกันไม่เกิน 1 คน)</li>
-          <li>ระบบจะจับสายแข่งขันรอบแรก (Seed 1) ให้อัตโนมัติ และสามารถส่งออกผลเป็น Excel ได้ทั้งรายประเภทและสรุปรวม</li>
-        </ol>
-        <div className="mt-3">
-          <button onClick={() => exportAllResults(store)} className="text-xs font-semibold text-tu-maroon hover:underline">
-            ส่งออกสรุปผลทั้งหมดตอนนี้ →
+      {/* HOW TO */}
+      <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft sm:p-6">
+        <p className="font-bold text-ink-900">วิธีใช้งาน</p>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            'ดาวน์โหลดฟอร์ม Excel รวมทุกประเภท กรอกรายชื่อนักกีฬาในแต่ละชีตให้ครบ',
+            'อัปโหลดไฟล์เดิมกลับเข้าระบบ ข้อมูลจะกระจายเข้าแต่ละประเภทกีฬาให้อัตโนมัติ',
+            'เข้าไปที่แต่ละประเภทกีฬา กด “สุ่มแบ่งสี” เพื่อสุ่มอย่างเป็นธรรม',
+            'ระบบจับสายแข่งรอบแรก (Seed 1) ให้อัตโนมัติ ส่งออกผลเป็น Excel ได้ทันที',
+          ].map((text, i) => (
+            <div key={i} className="relative rounded-xl border border-ink-100 bg-ink-50/60 p-4">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+                {i + 1}
+              </span>
+              <p className="mt-2.5 text-xs leading-relaxed text-ink-600">{text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <button onClick={() => exportAllResults(store)} className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:underline">
+            <DownloadIcon size={14} /> ส่งออกสรุปผลทั้งหมดตอนนี้
           </button>
         </div>
       </section>
@@ -149,13 +200,32 @@ export function HomePage() {
   )
 }
 
-function StatTile({ label, value, suffix, accent }: { label: string; value: number; suffix?: string; accent?: boolean }) {
+function StatTile({
+  icon,
+  label,
+  value,
+  suffix,
+  accent,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: number
+  suffix?: string
+  accent?: boolean
+}) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
-      <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className={`mt-1 text-2xl font-extrabold ${accent ? 'text-tu-maroon' : 'text-slate-900'}`}>
+    <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-soft">
+      <div
+        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${
+          accent ? 'bg-green-50 text-green-600' : 'bg-ink-100 text-ink-500'
+        }`}
+      >
+        {icon}
+      </div>
+      <p className="text-[11px] font-semibold text-ink-500">{label}</p>
+      <p className={`mt-0.5 text-2xl font-extrabold ${accent ? 'text-green-600' : 'text-ink-900'}`}>
         {value.toLocaleString('th-TH')}
-        {suffix && <span className="ml-1 text-sm font-medium text-slate-400">{suffix}</span>}
+        {suffix && <span className="ml-1 text-xs font-semibold text-ink-400">{suffix}</span>}
       </p>
     </div>
   )

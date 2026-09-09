@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { CheckCircleIcon, CloseIcon, InfoIcon } from '../components/Icons'
 
 interface Toast {
   id: number
@@ -15,30 +16,41 @@ const ToastCtx = createContext<Ctx | null>(null)
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
-  const notify = useCallback((message: string, kind: Toast['kind'] = 'info') => {
-    const id = Date.now() + Math.random()
-    setToasts((prev) => [...prev, { id, message, kind }])
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 3200)
+  const dismiss = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
+
+  const notify = useCallback(
+    (message: string, kind: Toast['kind'] = 'info') => {
+      const id = Date.now() + Math.random()
+      setToasts((prev) => [...prev, { id, message, kind }])
+      setTimeout(() => dismiss(id), 3600)
+    },
+    [dismiss],
+  )
 
   return (
     <ToastCtx.Provider value={{ notify }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm">
+      <div className="fixed bottom-4 right-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`animate-popIn rounded-xl px-4 py-3 text-sm font-medium shadow-card border ${
+            className={`flex animate-popIn items-start gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium shadow-pop ${
               t.kind === 'success'
-                ? 'bg-green-50 text-green-800 border-green-200'
+                ? 'border-green-200 bg-green-50 text-green-800'
                 : t.kind === 'error'
-                  ? 'bg-red-50 text-red-800 border-red-200'
-                  : 'bg-slate-800 text-white border-slate-700'
+                  ? 'border-rose-200 bg-rose-50 text-rose-800'
+                  : 'border-ink-700 bg-ink-800 text-white'
             }`}
           >
-            {t.message}
+            <span className="mt-0.5 shrink-0">
+              {t.kind === 'success' ? <CheckCircleIcon size={16} /> : t.kind === 'error' ? <InfoIcon size={16} /> : <InfoIcon size={16} />}
+            </span>
+            <span className="flex-1">{t.message}</span>
+            <button onClick={() => dismiss(t.id)} className="shrink-0 opacity-60 hover:opacity-100" aria-label="ปิด">
+              <CloseIcon size={14} />
+            </button>
           </div>
         ))}
       </div>

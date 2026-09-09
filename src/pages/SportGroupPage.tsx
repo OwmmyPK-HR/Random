@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getGroupBySlug } from '../data/events'
 import { EventCard } from '../components/EventCard'
 import { useEventStore } from '../store/EventStoreContext'
+import { ArrowLeftIcon, SPORT_ICON } from '../components/Icons'
 
 export function SportGroupPage() {
   const { slug = '' } = useParams()
@@ -10,23 +11,35 @@ export function SportGroupPage() {
 
   if (!group) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-        <p className="text-slate-600">ไม่พบหมวดกีฬานี้</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-tu-maroon hover:underline">
+      <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
+        <p className="text-ink-600">ไม่พบหมวดกีฬานี้</p>
+        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-600 hover:underline">
           ← กลับหน้าแรก
         </Link>
       </div>
     )
   }
 
+  const Icon = SPORT_ICON[group.name]
+  const done = group.events.filter((ev) => getEvent(ev.code).result).length
+
   return (
     <div className="space-y-5">
       <div>
-        <Link to="/" className="text-xs font-medium text-slate-400 hover:text-tu-maroon">
-          ← ประเภทกีฬาทั้งหมด
+        <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-ink-400 hover:text-brand-600">
+          <ArrowLeftIcon size={13} /> ประเภทกีฬาทั้งหมด
         </Link>
-        <h1 className="mt-1 text-2xl font-extrabold text-slate-900">{group.name}</h1>
-        <p className="text-sm text-slate-500">{group.events.length} รายการแข่งขัน</p>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-soft">
+            {Icon && <Icon size={24} />}
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-ink-900">{group.name}</h1>
+            <p className="text-sm text-ink-400">
+              {group.events.length} รายการแข่งขัน · สุ่มแล้ว {done}/{group.events.length}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
