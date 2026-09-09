@@ -14,7 +14,6 @@ interface Ctx {
   bulkSetRoster: (rosters: Record<string, RosterEntry[]>, mode: 'replace' | 'merge') => void
   drawBracket: (code: string) => void
   setMatchResult: (code: string, a: ColorName, b: ColorName, outcome: MatchOutcome | null) => void
-  setSchedule: (code: string, patch: { date?: string; venue?: string }) => void
   resetEvent: (code: string) => void
   resetAll: () => void
   replaceStore: (next: StoreShape) => void
@@ -33,7 +32,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
 
   const getEvent = useCallback((code: string) => store[code] ?? EMPTY, [store])
 
-  // ล้างเฉพาะผลจับสลาก/ผลแข่งขัน — "date"/"venue" (กำหนดการ) เป็นข้อมูลแยกอิสระจากรายชื่อ/ผลจับสลาก ไม่ต้องล้างตาม
+  // ล้างเฉพาะผลจับสลาก/ผลแข่งขัน ไม่กระทบรายชื่อ
   const clearDrawFields = { colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined } as const
 
   const setRoster = useCallback((code: string, roster: RosterEntry[]) => {
@@ -111,14 +110,6 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  /** ตั้ง/แก้วันที่และสถานที่แข่งขันจริง — ไม่กระทบรายชื่อหรือผลจับสลากที่มีอยู่ */
-  const setSchedule = useCallback((code: string, patch: { date?: string; venue?: string }) => {
-    setStore((prev) => ({
-      ...prev,
-      [code]: { ...(prev[code] ?? EMPTY), ...patch },
-    }))
-  }, [])
-
   const resetEvent = useCallback((code: string) => {
     setStore((prev) => ({
       ...prev,
@@ -146,7 +137,6 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       bulkSetRoster,
       drawBracket,
       setMatchResult,
-      setSchedule,
       resetEvent,
       resetAll,
       replaceStore,
@@ -160,7 +150,6 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       bulkSetRoster,
       drawBracket,
       setMatchResult,
-      setSchedule,
       resetEvent,
       resetAll,
       replaceStore,

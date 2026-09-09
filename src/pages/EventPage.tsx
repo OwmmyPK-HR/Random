@@ -11,16 +11,12 @@ import { ColorDot } from '../components/ColorBadge'
 import { DrawAnimation } from '../components/DrawAnimation'
 import { downloadSingleTemplate, exportEventResult, parseWorkbookFileForEvent } from '../utils/excel'
 import { entryLabel, groupRosterByColor } from '../utils/shuffle'
-import { formatThaiDateFull, formatThaiDateShort } from '../utils/date'
-import { getCandidateDates, getMasterVenue, type ScheduleCellType } from '../data/masterSchedule'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
 import {
   ArrowLeftIcon,
-  CalendarIcon,
   CheckCircleIcon,
   DiceIcon,
   DownloadIcon,
-  MapPinIcon,
   PencilIcon,
   PrinterIcon,
   TrashIcon,
@@ -32,19 +28,6 @@ const SHAPE_LABEL: Record<string, string> = {
   pair: 'คู่ (ชื่อคนที่ 1, ชื่อคนที่ 2) / บรรทัด',
   pairMixed: 'คู่ผสม (ชื่อฝ่ายชาย, ชื่อฝ่ายหญิง) / บรรทัด',
   team3: 'ทีม 3 คน (ชื่อทีม: คนที่1, คนที่2, คนที่3) / บรรทัด',
-}
-
-const CANDIDATE_CHIP_IDLE: Record<ScheduleCellType, string> = {
-  compete: 'bg-team-green/15 text-team-green hover:bg-team-green/25',
-  third: 'bg-gold-400/15 text-gold-600 hover:bg-gold-400/25',
-  final: 'bg-team-blue/15 text-team-blue hover:bg-team-blue/25',
-  finalAlert: 'bg-orange-500/15 text-orange-600 hover:bg-orange-500/25',
-}
-const CANDIDATE_CHIP_ACTIVE: Record<ScheduleCellType, string> = {
-  compete: '#16A34A',
-  third: '#F2B33D',
-  final: '#0284C7',
-  finalAlert: '#F97316',
 }
 
 const SHAPE_PLACEHOLDER: Record<string, string> = {
@@ -95,7 +78,7 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
 export function EventPage() {
   const { code = '' } = useParams()
   const ev = getEventByCode(code)
-  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, setMatchResult, setSchedule, resetEvent } = useEventStore()
+  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, setMatchResult, resetEvent } = useEventStore()
   const { notify } = useToast()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [activeColor, setActiveColor] = useState<ColorName>('ฟ้า')
@@ -173,78 +156,6 @@ export function EventPage() {
     drawBracket(code) // คำนวณผลจริงทันที เก็บไว้เงียบ ๆ ก่อน — แอนิเมชันด้านล่างจะค่อย ๆ เผยผลนี้
     setIsDrawing(true)
   }
-
-  const candidateDates = getCandidateDates(ev.sportGroup)
-  const masterVenue = getMasterVenue(ev.sportGroup)
-
-  const scheduleSection = (
-    <section className="rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
-      <div className="no-print grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-mist-400">
-            <CalendarIcon size={13} /> วันที่แข่งขัน
-          </span>
-          <input
-            type="date"
-            value={state.date ?? ''}
-            onChange={(e) => setSchedule(code, { date: e.target.value || undefined })}
-            className="w-full rounded-lg border border-surface-borderLight bg-surface-sunken px-3 py-2 text-sm text-mist-100 focus:border-accent focus:outline-none"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-mist-400">
-            <MapPinIcon size={13} /> สถานที่แข่งขัน
-          </span>
-          <input
-            type="text"
-            value={state.venue ?? ''}
-            onChange={(e) => setSchedule(code, { venue: e.target.value || undefined })}
-            placeholder="เช่น สนามฟุตบอล มธ. ศูนย์รังสิต"
-            className="w-full rounded-lg border border-surface-borderLight bg-surface-sunken px-3 py-2 text-sm text-mist-100 placeholder:text-mist-600 focus:border-accent focus:outline-none"
-          />
-        </label>
-      </div>
-
-      {masterVenue && state.venue !== masterVenue && (
-        <button
-          onClick={() => setSchedule(code, { venue: masterVenue })}
-          className="no-print mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
-        >
-          <MapPinIcon size={11} /> ใช้สถานที่ตามตารางหลัก: “{masterVenue}”
-        </button>
-      )}
-
-      {candidateDates.length > 0 && (
-        <div className="no-print mt-3 border-t border-surface-border pt-3">
-          <p className="mb-1.5 text-xs font-semibold text-mist-400">
-            เลือกจากวันที่มีสิทธิ์แข่งได้ตามตารางหลัก (เขียว=วันแข่ง, เหลือง=ชิงที่ 3, น้ำเงิน=ชิงชนะเลิศ)
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {candidateDates.map(({ iso, type }) => (
-              <button
-                key={iso}
-                onClick={() => setSchedule(code, { date: iso })}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                  state.date === iso ? 'text-white' : CANDIDATE_CHIP_IDLE[type]
-                }`}
-                style={state.date === iso ? { backgroundColor: CANDIDATE_CHIP_ACTIVE[type] } : undefined}
-              >
-                {formatThaiDateShort(iso)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {(state.date || state.venue) && (
-        <p className="hidden items-center gap-1.5 text-sm font-semibold text-mist-100 print:flex">
-          {state.date && formatThaiDateFull(state.date)}
-          {state.date && state.venue && ' · '}
-          {state.venue}
-        </p>
-      )}
-    </section>
-  )
 
   const rosterSection = (
     <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
@@ -430,8 +341,6 @@ export function EventPage() {
           </button>
         )}
       </div>
-
-      {scheduleSection}
 
       {/* STEP TRACKER */}
       {isColorTeam ? (
