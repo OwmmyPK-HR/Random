@@ -1,4 +1,5 @@
 import {
+  isWeekend,
   MASTER_SCHEDULE_FOOTNOTES,
   MASTER_SCHEDULE_NOTE,
   MASTER_SCHEDULE_ROWS,
@@ -26,7 +27,15 @@ const OCT_DAYS = Array.from({ length: 31 }, (_, i) => ({ month: 10 as const, day
 const NOV_DAYS = Array.from({ length: 15 }, (_, i) => ({ month: 11 as const, day: i + 1 }))
 const ALL_DAYS = [...OCT_DAYS, ...NOV_DAYS]
 
-function DayCell({ type }: { type?: ScheduleCellType }) {
+function DayCell({ type, weekend }: { type?: ScheduleCellType; weekend?: boolean }) {
+  if (weekend) {
+    return (
+      <td
+        className="h-8 w-6 border border-surface-border bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,var(--surface-border)_3px,var(--surface-border)_4px)] bg-surface-sunken/60"
+        aria-label="วันหยุดสุดสัปดาห์ ไม่มีการแข่งขัน"
+      />
+    )
+  }
   if (!type) return <td className="h-8 w-6 border border-surface-border bg-surface-raised/50" />
   return (
     <td className={`h-8 w-6 border border-surface-border text-center text-[9px] font-extrabold text-white ${CELL_STYLE[type]}`}>
@@ -69,17 +78,22 @@ export function MasterScheduleGrid() {
               <th className="min-w-[170px] border border-surface-border bg-surface-sunken px-2 py-1.5 text-left text-[10px] text-mist-400">
                 สถานที่แข่งขัน
               </th>
-              {ALL_DAYS.map(({ month, day }, i) => (
-                <th
-                  key={`${month}-${day}`}
-                  className={`w-6 border border-surface-border bg-surface-sunken px-0 py-1 text-center ${
-                    i > 0 && ALL_DAYS[i - 1].month !== month ? 'border-l-2 border-l-accent/40' : ''
-                  }`}
-                >
-                  <div className="text-[8px] leading-none text-mist-500">{thaiWeekdayAbbr(new Date(2026, month - 1, day))}</div>
-                  <div className="text-[10px] font-bold leading-tight text-mist-200">{day}</div>
-                </th>
-              ))}
+              {ALL_DAYS.map(({ month, day }, i) => {
+                const weekend = isWeekend(month, day)
+                return (
+                  <th
+                    key={`${month}-${day}`}
+                    className={`w-6 border border-surface-border px-0 py-1 text-center ${
+                      weekend ? 'bg-surface-sunken/60' : 'bg-surface-sunken'
+                    } ${i > 0 && ALL_DAYS[i - 1].month !== month ? 'border-l-2 border-l-accent/40' : ''}`}
+                  >
+                    <div className={`text-[8px] leading-none ${weekend ? 'text-mist-600' : 'text-mist-500'}`}>
+                      {thaiWeekdayAbbr(new Date(2026, month - 1, day))}
+                    </div>
+                    <div className={`text-[10px] font-bold leading-tight ${weekend ? 'text-mist-500' : 'text-mist-200'}`}>{day}</div>
+                  </th>
+                )
+              })}
             </tr>
             <tr>
               <th colSpan={3} className="sticky left-0 z-10 border border-surface-border bg-surface-sunken">
@@ -105,9 +119,16 @@ export function MasterScheduleGrid() {
                     {row.sport}
                   </td>
                   <td className="border border-surface-border px-2 py-1 text-mist-400">{row.venue}</td>
-                  {ALL_DAYS.map(({ month, day }) => (
-                    <DayCell key={`${month}-${day}`} type={cellMap.get(`${month}-${day}`)} />
-                  ))}
+                  {ALL_DAYS.map(({ month, day }) => {
+                    const weekend = isWeekend(month, day)
+                    return (
+                      <DayCell
+                        key={`${month}-${day}`}
+                        weekend={weekend}
+                        type={weekend ? undefined : cellMap.get(`${month}-${day}`)}
+                      />
+                    )
+                  })}
                 </tr>
               )
             })}
@@ -120,6 +141,7 @@ export function MasterScheduleGrid() {
         <Legend swatch="bg-gold-400" label='ชิงอันดับ 3 ("3rd")' />
         <Legend swatch="bg-team-blue/80" label='รอบชิงชนะเลิศ ("F")' />
         <Legend swatch="bg-orange-400" label="รอบชิงฟุตซอล (อาจเปลี่ยนวัน)" />
+        <Legend swatch="bg-surface-sunken/60 border border-dashed border-mist-500" label="เสาร์-อาทิตย์ (ไม่มีการแข่งขัน)" />
       </div>
       <ul className="list-disc space-y-1 pl-5 text-[11px] leading-relaxed text-mist-500">
         {MASTER_SCHEDULE_FOOTNOTES.map((f) => (

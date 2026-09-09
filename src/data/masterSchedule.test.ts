@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getCandidateDates, getMasterVenue, MASTER_SCHEDULE_ROWS, scheduleCellToIso } from './masterSchedule'
+import { getCandidateDates, getMasterVenue, isWeekend, MASTER_SCHEDULE_ROWS, scheduleCellToIso } from './masterSchedule'
 import { SPORT_GROUPS } from './events'
 
 describe('masterSchedule', () => {
@@ -30,5 +30,25 @@ describe('masterSchedule', () => {
   it('getMasterVenue returns undefined for a sport not in the source file', () => {
     expect(getMasterVenue('ว่ายน้ำ')).toBeUndefined()
     expect(getMasterVenue('ฟุตบอล')).toBe('สนามมินิสเตเดียม')
+  })
+
+  it('isWeekend correctly identifies Saturday/Sunday in Oct-Nov 2026', () => {
+    // ตรวจกับปฏิทินจริง: 3 ต.ค. 2569 = วันเสาร์, 4 ต.ค. 2569 = วันอาทิตย์, 13 ต.ค. 2569 = วันอังคาร
+    expect(isWeekend(10, 3)).toBe(true)
+    expect(isWeekend(10, 4)).toBe(true)
+    expect(isWeekend(10, 13)).toBe(false)
+    expect(isWeekend(10, 23)).toBe(false)
+  })
+
+  it('getCandidateDates never returns a Saturday or Sunday date, for every sport in the table', () => {
+    for (const row of MASTER_SCHEDULE_ROWS) {
+      const dates = getCandidateDates(row.sport)
+      expect(dates.length).toBeGreaterThan(0)
+      for (const d of dates) {
+        const [y, m, day] = d.iso.split('-').map(Number)
+        expect(isWeekend(m as 10 | 11, day)).toBe(false)
+        expect(y).toBe(2026)
+      }
+    }
   })
 })

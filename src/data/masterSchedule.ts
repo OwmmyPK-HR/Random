@@ -139,7 +139,8 @@ export const MASTER_SCHEDULE_ROWS: MasterScheduleRow[] = [
 
 export const MASTER_SCHEDULE_NOTE =
   'ถอดความจากไฟล์ CSV ต้นฉบับ "Final (แก้ไขร่าง) ตารางแข่งขัน TU Sport 2026 re1 14.7.69" — ครอบคลุมเฉพาะ 7 ประเภทกีฬาที่ระบบนี้จับสลากให้ ' +
-  'ช่องที่ทำเครื่องหมายคือ "วันที่มีสิทธิ์แข่งได้" (ตามความพร้อมของสนาม/ยิม) ไม่ใช่ทุกวันจะมีการแข่งจริง — ผู้จัดยังต้องเลือกวันจริงเองอีกทีสำหรับแต่ละรายการย่อย'
+  'ช่องที่ทำเครื่องหมายคือ "วันที่มีสิทธิ์แข่งได้" (ตามความพร้อมของสนาม/ยิม) ไม่ใช่ทุกวันจะมีการแข่งจริง — ผู้จัดยังต้องเลือกวันจริงเองอีกทีสำหรับแต่ละรายการย่อย ' +
+  '(เสาร์-อาทิตย์ไม่มีการแข่งขัน ตัดออกจากตัวเลือกให้แล้วทุกจุด)'
 
 export const MASTER_SCHEDULE_FOOTNOTES = [
   'ยิม 6 รอบชิงชนะเลิศฟุตซอล อาจมีการเปลี่ยนแปลงวันตามความเหมาะสม',
@@ -157,11 +158,19 @@ export function scheduleCellToIso(cell: ScheduleCell): string {
   return `${EVENT_YEAR_AD}-${mm}-${dd}`
 }
 
-/** วันที่ (ISO) ที่ "มีสิทธิ์แข่งได้" ของประเภทกีฬานี้ ตามตารางหลัก — คืนค่าว่างถ้าไม่มีข้อมูล */
+// เสาร์-อาทิตย์ไม่มีการแข่งขัน (แจ้งไว้โดยผู้จัด) — คัดออกตรงนี้ที่เดียว ทุกจุดที่ใช้ตารางนี้จะไม่มีวันหยุดสุดสัปดาห์หลุดออกไปแน่นอน
+// เก็บข้อมูลดิบจาก CSV ไว้ครบใน MASTER_SCHEDULE_ROWS (เผื่ออ้างอิงย้อนหลัง) แล้วกรองออกตอนใช้งานแทนที่จะแก้ข้อมูลต้นทาง
+export function isWeekend(month: 10 | 11, day: number): boolean {
+  const dow = new Date(EVENT_YEAR_AD, month - 1, day).getDay() // 0=อาทิตย์, 6=เสาร์
+  return dow === 0 || dow === 6
+}
+
+/** วันที่ (ISO) ที่ "มีสิทธิ์แข่งได้" ของประเภทกีฬานี้ ตามตารางหลัก — ตัดวันเสาร์-อาทิตย์ออกเสมอ, คืนค่าว่างถ้าไม่มีข้อมูล */
 export function getCandidateDates(sportGroup: string): { iso: string; type: ScheduleCellType }[] {
   const row = MASTER_SCHEDULE_ROWS.find((r) => r.sport === sportGroup)
   if (!row) return []
   return row.cells
+    .filter((c) => !isWeekend(c.month, c.day))
     .slice()
     .sort((a, b) => a.month - b.month || a.day - b.day)
     .map((c) => ({ iso: scheduleCellToIso(c), type: c.type }))
