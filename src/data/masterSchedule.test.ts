@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { getCandidateDates, getMasterVenue, isWeekend, MASTER_SCHEDULE_ROWS, scheduleCellToIso } from './masterSchedule'
+import {
+  EVENT_PERIOD_START,
+  getCandidateDates,
+  getMasterVenue,
+  isWeekend,
+  MASTER_SCHEDULE_ROWS,
+  scheduleCellToIso,
+} from './masterSchedule'
 import { SPORT_GROUPS } from './events'
 
 describe('masterSchedule', () => {
@@ -48,6 +55,17 @@ describe('masterSchedule', () => {
         const [y, m, day] = d.iso.split('-').map(Number)
         expect(isWeekend(m as 10 | 11, day)).toBe(false)
         expect(y).toBe(2026)
+      }
+    }
+  })
+
+  it('the whole competition period starts 1 ตุลาคม 2569, matching the source CSV\'s first day column', () => {
+    expect(EVENT_PERIOD_START).toEqual({ month: 10, day: 1 })
+    // ไม่มีวันไหนในตารางที่อยู่ก่อนวันเริ่มต้นนี้
+    for (const row of MASTER_SCHEDULE_ROWS) {
+      for (const cell of row.cells) {
+        const before = cell.month < EVENT_PERIOD_START.month || (cell.month === EVENT_PERIOD_START.month && cell.day < EVENT_PERIOD_START.day)
+        expect(before).toBe(false)
       }
     }
   })
