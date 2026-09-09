@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EVENTS, SPORT_GROUPS } from '../data/events'
 import { COLORS } from '../types'
@@ -10,12 +10,14 @@ import { groupRosterByColor } from '../utils/shuffle'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import { TeamColorCards } from '../components/TeamColorCards'
 import { ShowcasePanel } from '../components/ShowcasePanel'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import {
   ChartIcon,
   CheckCircleIcon,
   ChevronRightIcon,
   DownloadIcon,
   SPORT_ICON,
+  TrashIcon,
   TrophyIcon,
   UploadIcon,
   UsersIcon,
@@ -39,9 +41,10 @@ const STEPS = [
 ]
 
 export function HomePage() {
-  const { store, bulkSetRoster } = useEventStore()
+  const { store, bulkSetRoster, resetAll } = useEventStore()
   const { notify } = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   const totalEvents = EVENTS.length
   const withData = eventsWithDataCount(store)
@@ -114,6 +117,14 @@ export function HomePage() {
             >
               <ChartIcon size={16} /> สรุปผล &amp; ส่งออก
             </Link>
+            {withData > 0 && (
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-rose-900/40 px-4 py-2.5 text-sm font-bold text-rose-500 transition hover:bg-rose-500/10"
+              >
+                <TrashIcon size={16} /> ล้างข้อมูลทั้งหมด
+              </button>
+            )}
           </div>
         </div>
 
@@ -207,6 +218,21 @@ export function HomePage() {
           </button>
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirmReset}
+        title="ล้างข้อมูลทั้งหมด?"
+        message="รายชื่อนักกีฬาและผลการจับสลากของทุกประเภทกีฬาจะถูกลบทั้งหมดออกจากเครื่องนี้ การกระทำนี้ย้อนกลับไม่ได้
+ถ้าต้องการลบแค่บางประเภท เข้าไปที่หน้าประเภทกีฬานั้นแล้วกด “ลบทั้งหมด” แทนได้"
+        confirmLabel="ล้างข้อมูลทั้งหมด"
+        danger
+        onCancel={() => setConfirmReset(false)}
+        onConfirm={() => {
+          resetAll()
+          setConfirmReset(false)
+          notify('ล้างข้อมูลทั้งหมดเรียบร้อย', 'success')
+        }}
+      />
     </div>
   )
 }
