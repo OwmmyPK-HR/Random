@@ -32,7 +32,7 @@ export function SummaryPage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => exportAllResults(store)}
-            className="inline-flex items-center gap-2 rounded-xl bg-gold-400 px-4 py-2.5 text-sm font-bold text-surface-canvas shadow-glowGold transition hover:-translate-y-0.5 hover:bg-gold-300"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-contrast shadow-glowAccent transition hover:-translate-y-0.5 hover:bg-accent-soft"
           >
             <DownloadIcon size={16} /> ส่งออกสรุปผลทั้งหมด (Excel)
           </button>
@@ -84,7 +84,7 @@ export function SummaryPage() {
                       </td>
                     )}
                     <td className="px-4 py-2.5">
-                      <Link to={`/event/${ev.code}`} className="font-medium text-mist-200 hover:text-gold-400">
+                      <Link to={`/event/${ev.code}`} className="font-medium text-mist-200 hover:text-accent">
                         {ev.name}
                       </Link>
                     </td>
@@ -103,7 +103,7 @@ export function SummaryPage() {
                           <CheckCircleIcon size={11} /> จับคู่แล้ว
                         </span>
                       ) : state?.roster?.length ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-gold-400/10 px-2 py-0.5 text-[11px] font-bold text-gold-400">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-bold text-accent">
                           <ClockIcon size={11} /> รอจับคู่
                         </span>
                       ) : (

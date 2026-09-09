@@ -8,9 +8,12 @@ import { downloadAllTemplates, exportAllResults, parseWorkbookFile } from '../ut
 import { eventsWithDataCount, randomizedCount, totalHeadcount } from '../utils/stats'
 import { groupRosterByColor } from '../utils/shuffle'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
+import { TeamColorCards } from '../components/TeamColorCards'
+import { ShowcasePanel } from '../components/ShowcasePanel'
 import {
   ChartIcon,
   CheckCircleIcon,
+  ChevronRightIcon,
   DownloadIcon,
   SPORT_ICON,
   TrophyIcon,
@@ -27,6 +30,13 @@ const GROUP_BLURB: Record<string, string> = {
   แบดมินตัน: 'คู่ทุกรุ่นอายุ · คู่ผสม',
   เปตอง: 'เดี่ยว · คู่ · ทีม 3 คน',
 }
+
+const STEPS = [
+  { title: 'ตรวจรายชื่อ', desc: 'ตรวจสอบรายชื่อทีม/นักกีฬาที่เข้าร่วมแยกตามสี' },
+  { title: 'ดาวน์โหลด/อัปโหลด', desc: 'กรอกฟอร์ม Excel แล้วอัปโหลดกลับเข้าระบบ' },
+  { title: 'จับสลาก', desc: 'เข้าประเภทกีฬา กดสุ่มจับคู่แข่งขันรอบแรก' },
+  { title: 'ยืนยันผล', desc: 'ตรวจสอบและส่งออกผลเป็น Excel' },
+]
 
 export function HomePage() {
   const { store, bulkSetRoster } = useEventStore()
@@ -64,36 +74,28 @@ export function HomePage() {
   return (
     <div className="space-y-8">
       {/* HERO */}
-      <section className="corner-cut relative overflow-hidden bg-gradient-to-br from-brand-700 via-surface-sunken to-surface-canvas p-6 shadow-pop ring-1 ring-surface-border sm:p-10">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -right-16 -top-24 h-80 w-80 animate-drift rounded-full bg-gold-500 opacity-[.16] blur-3xl" />
-          <div className="absolute -bottom-28 left-4 h-72 w-72 animate-drift rounded-full bg-team-blue opacity-[.14] blur-3xl" style={{ animationDelay: '2s' }} />
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-stripe opacity-70" />
-        </div>
-        <div className="relative">
-          <span className="eyebrow inline-flex items-center gap-1.5 bg-gold-400 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-surface-canvas">
-            <TrophyIcon size={13} /> TU Sport Day 2026
-          </span>
-          <h1 className="mt-4 max-w-2xl text-3xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-4xl">
-            สุ่มจับคู่<span className="text-gold-400">แข่งขัน</span>กีฬาสี
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_1fr]">
+        <div className="flex flex-col justify-center rounded-3xl border border-surface-border bg-surface-card p-6 shadow-soft sm:p-9">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-accent">TU Sport Day 2026</p>
+          <h1 className="mt-2 max-w-lg text-[26px] font-extrabold leading-tight text-mist-100 sm:text-[32px]">
+            สุ่มจับคู่แข่งขันกีฬาสี
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-mist-300 sm:text-[15px]">
-            แต่ละสี — <b className="text-team-blue-soft">ฟ้า</b> <b className="text-team-purple-soft">ม่วง</b>{' '}
-            <b className="text-team-pink-soft">ชมพู</b> <b className="text-team-green-soft">เขียว</b> — มีนักกีฬาและทีมของตัวเองอยู่แล้ว
-            กรอกรายชื่อแยกตามสี แล้วให้ระบบ<strong className="font-bold text-white">สุ่มจับคู่แข่งขันรอบแรก (Seed 1)</strong>ให้อย่างเป็นธรรม
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-mist-400">
+            กีฬาสร้างคน สร้างมิตรภาพ สร้างธรรมศาสตร์ที่ยิ่งใหญ่กว่าเดิม — แต่ละสีมีนักกีฬาและทีมของตัวเองอยู่แล้ว
+            แค่กรอกรายชื่อแยกตามสี แล้วให้ระบบสุ่มจับคู่แข่งขันรอบแรก (Seed 1) ให้อย่างเป็นธรรม
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             <button
               onClick={() => downloadAllTemplates(store)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-400 px-4 py-2.5 text-sm font-bold text-surface-canvas shadow-glowGold transition hover:-translate-y-0.5 hover:bg-gold-300"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-contrast shadow-glowAccent transition hover:-translate-y-0.5 hover:bg-accent-soft"
             >
-              <DownloadIcon size={16} /> ดาวน์โหลดฟอร์ม Excel (ทุกประเภท)
+              <DownloadIcon size={16} /> ดาวน์โหลดฟอร์ม Excel
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-card/80 px-4 py-2.5 text-sm font-bold text-mist-100 transition hover:border-gold-400/50 hover:text-gold-300"
+              className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2.5 text-sm font-bold text-mist-200 transition hover:border-accent/50 hover:text-accent"
             >
-              <UploadIcon size={16} /> อัปโหลดไฟล์รวม
+              <UploadIcon size={16} /> นำเข้า Excel
             </button>
             <input
               ref={fileRef}
@@ -108,13 +110,18 @@ export function HomePage() {
             />
             <Link
               to="/summary"
-              className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-card/80 px-4 py-2.5 text-sm font-bold text-mist-100 transition hover:border-gold-400/50 hover:text-gold-300"
+              className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2.5 text-sm font-bold text-mist-200 transition hover:border-accent/50 hover:text-accent"
             >
               <ChartIcon size={16} /> สรุปผล &amp; ส่งออก
             </Link>
           </div>
         </div>
+
+        <ShowcasePanel />
       </section>
+
+      {/* TEAM COLOR CARDS */}
+      <TeamColorCards />
 
       {/* STATS */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -136,7 +143,7 @@ export function HomePage() {
 
       {/* SPORT GROUPS */}
       <section>
-        <h2 className="mb-3 text-lg font-extrabold uppercase tracking-wide text-mist-100">ประเภทกีฬา</h2>
+        <h2 className="mb-3 text-lg font-extrabold text-mist-100">ประเภทกีฬา</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SPORT_GROUPS.map((g) => {
             const done = g.events.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
@@ -146,25 +153,25 @@ export function HomePage() {
               <Link
                 key={g.slug}
                 to={`/sport/${g.slug}`}
-                className="group corner-cut-sm flex flex-col justify-between border border-surface-border bg-surface-card p-5 shadow-soft transition-all hover:-translate-y-1 hover:border-gold-400/40 hover:shadow-glowGold"
+                className="group flex flex-col justify-between rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-card"
               >
                 <div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-raised text-gold-400 transition-colors group-hover:bg-gold-400 group-hover:text-surface-canvas">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-accent group-hover:text-accent-contrast dark:bg-surface-raised dark:text-accent">
                     {Icon && <Icon size={22} />}
                   </div>
-                  <h3 className="mt-3 font-bold text-mist-100 group-hover:text-gold-300">{g.name}</h3>
+                  <h3 className="mt-3 font-bold text-mist-100 group-hover:text-accent">{g.name}</h3>
                   <p className="text-xs text-mist-500">{GROUP_BLURB[g.name]}</p>
                 </div>
                 <div className="mt-5">
                   <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-mist-400">
                     <span>{g.events.length} รายการ</span>
-                    <span className={pct === 100 ? 'text-team-green-soft' : ''}>
+                    <span className={pct === 100 ? 'text-team-green' : ''}>
                       จับคู่แล้ว {done}/{g.events.length}
                     </span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-surface-raised">
                     <div
-                      className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-team-green shadow-glowGreen' : 'bg-gold-400'}`}
+                      className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-team-green' : 'bg-accent'}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -177,24 +184,25 @@ export function HomePage() {
 
       {/* HOW TO */}
       <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft sm:p-6">
-        <p className="font-extrabold uppercase tracking-wide text-mist-100">วิธีใช้งาน</p>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            'ดาวน์โหลดฟอร์ม Excel รวมทุกประเภท — แต่ละชีตมีคอลัมน์แยกตามสีให้แล้ว (ฟ้า/ม่วง/ชมพู/เขียว)',
-            'กรอกรายชื่อนักกีฬา/ทีมของแต่ละสีลงคอลัมน์ของสีนั้น แล้วอัปโหลดไฟล์กลับเข้าระบบ',
-            'เข้าไปที่แต่ละประเภทกีฬา กด “สุ่มจับคู่แข่งขัน” ให้ระบบสุ่มคู่ต่อสู้รอบแรกอย่างเป็นธรรม',
-            'ได้สายการแข่งขันรอบแรก (Seed 1) ทันที ส่งออกผลเป็น Excel ได้เลย',
-          ].map((text, i) => (
-            <div key={i} className="relative rounded-xl border border-surface-border bg-surface-sunken p-4">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-400 text-xs font-extrabold text-surface-canvas">
-                {i + 1}
-              </span>
-              <p className="mt-2.5 text-xs leading-relaxed text-mist-400">{text}</p>
+        <p className="font-extrabold text-mist-100">ขั้นตอนการจับสลาก</p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-0">
+          {STEPS.map((step, i) => (
+            <div key={step.title} className="flex flex-1 items-center gap-2 sm:gap-0">
+              <div className="flex flex-1 items-start gap-3 rounded-xl px-2 py-1 sm:px-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-extrabold text-white">
+                  {i + 1}
+                </span>
+                <span>
+                  <span className="block text-sm font-bold text-mist-100">{step.title}</span>
+                  <span className="block text-xs leading-relaxed text-mist-500">{step.desc}</span>
+                </span>
+              </div>
+              {i < STEPS.length - 1 && <ChevronRightIcon size={16} className="hidden shrink-0 text-mist-600 sm:block" />}
             </div>
           ))}
         </div>
         <div className="mt-4">
-          <button onClick={() => exportAllResults(store)} className="inline-flex items-center gap-1.5 text-xs font-bold text-gold-400 hover:underline">
+          <button onClick={() => exportAllResults(store)} className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline">
             <DownloadIcon size={14} /> ส่งออกสรุปผลทั้งหมดตอนนี้
           </button>
         </div>
@@ -220,17 +228,15 @@ function StatTile({
     <div className="rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
       <div
         className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${
-          accent ? 'bg-team-green/15 text-team-green-soft' : 'bg-surface-raised text-mist-400'
+          accent ? 'bg-team-green/15 text-team-green' : 'bg-surface-raised text-mist-400'
         }`}
       >
         {icon}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-mist-500">{label}</p>
-      <p
-        className={`mt-0.5 text-2xl font-extrabold [font-variant-numeric:tabular-nums] ${accent ? 'text-team-green-soft' : 'text-mist-100'}`}
-      >
+      <p className="text-[11px] font-semibold text-mist-500">{label}</p>
+      <p className={`mt-0.5 text-2xl font-extrabold [font-variant-numeric:tabular-nums] ${accent ? 'text-team-green' : 'text-mist-100'}`}>
         {value.toLocaleString('th-TH')}
-        {suffix && <span className="ml-1 text-xs font-semibold text-mist-600">{suffix}</span>}
+        {suffix && <span className="ml-1 text-xs font-semibold text-mist-500">{suffix}</span>}
       </p>
     </div>
   )

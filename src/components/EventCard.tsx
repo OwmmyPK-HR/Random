@@ -9,13 +9,13 @@ export function EventCard({ ev, state }: { ev: SportEvent; state: EventState }) 
   return (
     <Link
       to={`/event/${ev.code}`}
-      className="group flex flex-col justify-between rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-gold-400/40 hover:shadow-glowGold"
+      className="group flex flex-col justify-between rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-glowAccent"
     >
       <div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-mist-400">{ev.genderLabel}</span>
           {ev.ageLabel && (
-            <span className="rounded-full bg-gold-400/10 px-2 py-0.5 text-[11px] font-semibold text-gold-400">{ev.ageLabel}</span>
+            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent">{ev.ageLabel}</span>
           )}
           {ev.mode === 'colorTeam' && (
             <span className="rounded-full bg-team-blue/15 px-2 py-0.5 text-[11px] font-semibold text-team-blue-soft">
@@ -23,7 +23,7 @@ export function EventCard({ ev, state }: { ev: SportEvent; state: EventState }) 
             </span>
           )}
         </div>
-        <h3 className="mt-2 flex items-center gap-1 font-semibold text-mist-100 group-hover:text-gold-300">
+        <h3 className="mt-2 flex items-center gap-1 font-semibold text-mist-100 group-hover:text-accent-soft">
           {ev.name}
           <ChevronRightIcon size={15} className="opacity-0 transition-opacity group-hover:opacity-100" />
         </h3>
@@ -46,7 +46,7 @@ function StatusPill({ done, hasData }: { done: boolean; hasData: boolean }) {
     )
   if (hasData)
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-gold-400/10 px-2.5 py-1 text-[11px] font-bold text-gold-400">
+      <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">
         <ClockIcon size={12} /> รอจับคู่
       </span>
     )

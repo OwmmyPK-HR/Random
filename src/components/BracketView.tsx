@@ -26,7 +26,7 @@ export function ColorBracketView({ colors }: { colors: ColorName[] }) {
       ].map(([a, b], i) => (
         <div key={i} className="rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
           <p className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-mist-500">
-            <TrophyIcon size={13} className="text-gold-400" /> คู่ที่ {i + 1}
+            <TrophyIcon size={13} className="text-accent" /> คู่ที่ {i + 1}
           </p>
           <div className="flex items-center gap-3">
             <ColorMatchBox color={a} />

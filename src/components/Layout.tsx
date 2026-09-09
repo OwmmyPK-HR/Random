@@ -36,10 +36,19 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
+function SidebarTagline() {
+  return (
+    <p className="mt-6 border-t border-surface-border px-3 pt-4 text-[10px] font-semibold uppercase leading-relaxed tracking-[0.18em] text-mist-600">
+      Play Together
+      <br />A Brighter Tomorrow
+    </p>
+  )
+}
+
 function navClass(active: boolean) {
   return `group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
     active
-      ? 'bg-gold-400 text-surface-canvas shadow-glowGold'
+      ? 'bg-accent text-accent-contrast shadow-glowAccent'
       : 'text-mist-400 hover:bg-surface-raised hover:text-mist-100'
   }`
 }
@@ -50,7 +59,7 @@ function ThemeToggle({ className = '' }: { className?: string }) {
   return (
     <button
       onClick={toggleTheme}
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-surface-border text-mist-300 transition-colors hover:border-gold-400/50 hover:text-gold-300 ${className}`}
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-surface-border text-mist-300 transition-colors hover:border-accent/50 hover:text-accent-soft ${className}`}
       aria-label={isDark ? 'สลับเป็นโหมดสีขาว' : 'สลับเป็นโหมดมืด'}
       title={isDark ? 'โหมดสีขาว' : 'โหมดมืด'}
     >
@@ -91,6 +100,11 @@ export function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
+            <p className="hidden text-right text-[10px] font-semibold uppercase leading-tight tracking-[0.18em] text-mist-500 xl:block">
+              More Than A Game
+              <br />We Grow Together
+            </p>
+
             <div className="hidden items-center gap-3 rounded-full border border-surface-border bg-surface-card px-3 py-1.5 sm:flex">
               {COLORS.map((c) => (
                 <span key={c} className="flex items-center gap-1.5 text-xs font-semibold text-mist-400">
@@ -132,6 +146,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-20 rounded-2xl border border-surface-border bg-surface-sunken p-3 shadow-soft">
             <NavItems />
+            <SidebarTagline />
           </div>
         </aside>
         <main className="min-w-0 flex-1 pb-16">{children}</main>

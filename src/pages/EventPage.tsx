@@ -66,7 +66,7 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
   return (
     <span
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-        done ? 'bg-team-green text-white' : active ? 'bg-gold-400 text-surface-canvas' : 'bg-surface-raised text-mist-600'
+        done ? 'bg-team-green text-white' : active ? 'bg-accent text-accent-contrast' : 'bg-surface-raised text-mist-600'
       }`}
     >
       {done ? <CheckCircleIcon size={15} /> : n}
@@ -113,7 +113,7 @@ export function EventPage() {
     return (
       <div className="rounded-2xl border border-surface-border bg-surface-card p-8 text-center">
         <p className="text-mist-400">ไม่พบประเภทกีฬานี้</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-gold-400 hover:underline">
+        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-accent hover:underline">
           ← กลับหน้าแรก
         </Link>
       </div>
@@ -155,7 +155,7 @@ export function EventPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link to={`/sport/${ev.groupSlug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-gold-400">
+        <Link to={`/sport/${ev.groupSlug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
           <ArrowLeftIcon size={13} /> {ev.sportGroup}
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -239,7 +239,7 @@ export function EventPage() {
               onChange={(e) => setQuickAddText((prev) => ({ ...prev, [activeColor]: e.target.value }))}
               placeholder={SHAPE_PLACEHOLDER[ev.entryShape]}
               rows={4}
-              className="w-full rounded-lg border border-surface-borderLight bg-surface-card p-2.5 text-sm text-mist-100 placeholder:text-mist-700 focus:border-gold-400 focus:outline-none"
+              className="w-full rounded-lg border border-surface-borderLight bg-surface-card p-2.5 text-sm text-mist-100 placeholder:text-mist-700 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex justify-end gap-2">
               <button onClick={() => setQuickAddOpen(false)} className="px-3 py-1.5 text-xs font-semibold text-mist-500">
@@ -269,29 +269,31 @@ export function EventPage() {
         </section>
       )}
 
-      {/* ปุ่มสุ่มจับคู่ */}
-      <section className="flex flex-wrap items-center gap-3">
+      {/* ปุ่มจับสลาก */}
+      <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
         <button
           onClick={() => (hasBracket ? setConfirmRedraw(true) : doDraw())}
           disabled={!hasData || isDrawing}
-          className="inline-flex items-center gap-2 rounded-xl bg-gold-400 px-5 py-2.5 text-sm font-bold text-surface-canvas shadow-glowGold transition hover:-translate-y-0.5 hover:bg-gold-300 disabled:pointer-events-none disabled:translate-y-0 disabled:bg-surface-raised disabled:text-mist-600 disabled:shadow-none"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3.5 text-base font-bold text-accent-contrast shadow-glowAccent transition hover:-translate-y-0.5 hover:bg-accent-soft disabled:pointer-events-none disabled:translate-y-0 disabled:bg-surface-raised disabled:text-mist-600 disabled:shadow-none"
         >
-          <DiceIcon size={17} className={isDrawing ? 'animate-tumble' : ''} />
-          {isDrawing ? 'กำลังสุ่มจับคู่...' : hasBracket ? 'สุ่มจับคู่ใหม่' : 'สุ่มจับคู่แข่งขัน'}
+          <DiceIcon size={19} className={isDrawing ? 'animate-tumble' : ''} />
+          {isDrawing ? 'กำลังจับสลาก...' : hasBracket ? 'จับสลากใหม่' : 'เริ่มจับสลาก'}
         </button>
-        {hasBracket && !isDrawing && (
-          <button
-            onClick={() => exportEventResult(ev, state)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-4 py-2.5 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
-          >
-            <DownloadIcon size={15} /> ส่งออกผลเป็น Excel
-          </button>
-        )}
-        {state.drawnAt && !isDrawing && (
-          <span className="text-xs text-mist-600">
-            สุ่มล่าสุด: {new Date(state.drawnAt).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
-          </span>
-        )}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+          {hasBracket && !isDrawing && (
+            <button
+              onClick={() => exportEventResult(ev, state)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
+            >
+              <DownloadIcon size={15} /> ส่งออกผลเป็น Excel
+            </button>
+          )}
+          {state.drawnAt && !isDrawing && (
+            <span className="text-xs text-mist-600">
+              จับสลากล่าสุด: {new Date(state.drawnAt).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+            </span>
+          )}
+        </div>
       </section>
 
       {isDrawing && (
@@ -309,7 +311,7 @@ export function EventPage() {
       {hasBracket && !isDrawing && (
         <section className="space-y-4">
           <h2 className="flex items-center gap-1.5 font-bold text-mist-100">
-            <TrophyIcon size={17} className="text-gold-400" /> คู่แข่งขันรอบแรก (Seed 1)
+            <TrophyIcon size={17} className="text-accent" /> คู่แข่งขันรอบแรก (Seed 1)
           </h2>
           {ev.mode === 'colorTeam' && state.colorBracket && <ColorBracketView colors={state.colorBracket} />}
           {ev.mode === 'bracket' && state.unitBracket && <UnitBracketView pairs={state.unitBracket} />}

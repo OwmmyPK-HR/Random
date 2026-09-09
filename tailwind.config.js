@@ -9,6 +9,9 @@ function themedColor(varName) {
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  // เปิดให้ dark: ใช้กับ [data-theme="dark"] ได้ สำหรับจุดที่ต้องออกแบบต่างกันจริง ๆ ระหว่างสองโหมด
+  // (ไม่ใช่แค่สลับค่าสี) — ปกติสีพื้นผิว/ตัวอักษร/accent ใช้ CSS variable สลับเองอยู่แล้วโดยไม่ต้องพึ่งตัวนี้
+  darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
     extend: {
       fontFamily: {
@@ -33,7 +36,13 @@ export default {
           600: themedColor('--mist-600'),
           700: themedColor('--mist-700'),
         },
-        // ทองคำ — accent หลักของระบบ (ถ้วยรางวัล/ชัยชนะ)
+        // accent หลักของระบบ (ปุ่ม/ลิงก์/nav ที่ active) — โหมดขาว = เขียวป่า, โหมดมืด = ทอง
+        accent: {
+          DEFAULT: themedColor('--accent'),
+          soft: themedColor('--accent-soft'),
+          contrast: themedColor('--accent-contrast'), // สีตัวอักษรบนพื้น accent
+        },
+        // ทองคำ — คงไว้ใช้ตกแต่ง (ถ้วยรางวัล ริง ฯลฯ) ไม่ขึ้นกับโหมด
         gold: {
           300: '#F8D889',
           400: '#F2B33D',
@@ -41,8 +50,17 @@ export default {
           600: '#B87F16',
           700: '#8A5F10',
         },
-        // ครั่ง TU — โทนรองใช้เป็น undertone/gradient
+        // เขียวป่า — ใช้กับภาพประกอบ/แผงตกแต่งที่ตั้งใจให้เขียวเข้มเสมอไม่ว่าโหมดไหน
+        pine: {
+          600: '#1B8560',
+          700: '#146B4F',
+          800: '#0F3D2E',
+          900: '#0A2E22',
+        },
+        // ครั่ง TU — โทนเอกลักษณ์หลัก ใช้กับโลโก้/หัวข้อ/eyebrow
         brand: {
+          50: '#FBEAEC',
+          100: '#F3CDD1',
           400: '#B23A48',
           500: '#96222F',
           600: '#7A1F2B',
@@ -58,10 +76,10 @@ export default {
         },
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.35)',
-        card: '0 10px 30px rgba(0,0,0,.45)',
-        pop: '0 24px 60px rgba(0,0,0,.55)',
-        glowGold: '0 0 0 1px rgba(242,179,61,.4), 0 0 24px rgba(242,179,61,.35)',
+        soft: '0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06)',
+        card: '0 10px 30px rgba(0,0,0,.1)',
+        pop: '0 24px 60px rgba(0,0,0,.22)',
+        glowAccent: '0 0 0 1px rgb(var(--accent) / .35), 0 0 24px rgb(var(--accent) / .3)',
         glowBlue: '0 0 24px rgba(56,189,248,.35)',
         glowPurple: '0 0 24px rgba(192,132,252,.35)',
         glowPink: '0 0 24px rgba(244,114,182,.35)',

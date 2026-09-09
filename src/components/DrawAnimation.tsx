@@ -89,8 +89,8 @@ export function DrawAnimation({
   const isBye = settled && !finalRef.current?.b
 
   return (
-    <section className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-gold-400/30 bg-gold-400/5 px-6 py-12">
-      <span className="eyebrow inline-flex items-center gap-1.5 bg-gold-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-surface-canvas">
+    <section className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-accent/30 bg-accent/5 px-6 py-12">
+      <span className="eyebrow inline-flex items-center gap-1.5 bg-accent px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-accent-contrast">
         <DiceIcon size={12} className={settled ? '' : 'animate-tumble'} />
         {settled ? 'ได้คู่แข่งขันแล้ว!' : 'กำลังสุ่มจับคู่แข่งขัน...'}
       </span>

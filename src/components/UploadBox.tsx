@@ -24,12 +24,12 @@ export function UploadBox({ onFile, label }: { onFile: (file: File) => void; lab
       }}
       onClick={() => inputRef.current?.click()}
       className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all ${
-        dragOver ? 'scale-[1.01] border-gold-400 bg-gold-400/5' : 'border-surface-borderLight bg-surface-sunken hover:border-mist-600'
+        dragOver ? 'scale-[1.01] border-accent bg-accent/5' : 'border-surface-borderLight bg-surface-sunken hover:border-mist-600'
       }`}
     >
       <div
         className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
-          dragOver ? 'bg-gold-400 text-surface-canvas' : 'bg-surface-raised text-mist-500'
+          dragOver ? 'bg-accent text-accent-contrast' : 'bg-surface-raised text-mist-500'
         }`}
       >
         <UploadIcon size={20} />

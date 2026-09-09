@@ -7,9 +7,9 @@ const STORAGE_KEY = 'tu-sportday-theme'
 function readStoredTheme(): Theme {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw === 'light' ? 'light' : 'dark'
+    return raw === 'dark' ? 'dark' : 'light'
   } catch {
-    return 'dark'
+    return 'light'
   }
 }
 
@@ -24,12 +24,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => readStoredTheme())
 
   useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'light') {
-      root.setAttribute('data-theme', 'light')
-    } else {
-      root.removeAttribute('data-theme')
-    }
+    document.documentElement.setAttribute('data-theme', theme)
     try {
       localStorage.setItem(STORAGE_KEY, theme)
     } catch {
