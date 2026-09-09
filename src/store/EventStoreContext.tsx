@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { ColorName, EventState, MatchOutcome, RosterEntry, StoreShape } from '../types'
 import { getEventByCode } from '../data/events'
-import { drawRoundRobin, drawUnitBracket, groupRosterByColor } from '../utils/shuffle'
+import { drawRoundRobin, drawUnitBracketBySai, groupRosterByColor } from '../utils/shuffle'
 import { matchKey } from '../utils/standings'
 import { loadStore, saveStore, clearStore } from '../utils/storage'
 
@@ -89,7 +89,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       if (ev.mode === 'bracket' && roster.length === 0) return prev
       const grouped = groupRosterByColor(roster)
       const colorBracket = ev.mode === 'colorTeam' ? drawRoundRobin() : undefined
-      const unitBracket = ev.mode === 'bracket' ? drawUnitBracket(grouped) : undefined
+      const unitBracket = ev.mode === 'bracket' ? drawUnitBracketBySai(grouped) : undefined
       return {
         ...prev,
         [code]: { ...prev[code], roster, colorBracket, matchResults: undefined, unitBracket, drawnAt: new Date().toISOString() },

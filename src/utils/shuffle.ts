@@ -1,4 +1,4 @@
-import { COLORS, type BracketPair, type ColorName, type ResultMap, type RosterEntry } from '../types'
+import { COLORS, type BracketPair, type ColorName, type ResultMap, type RosterEntry, type SaiBracket } from '../types'
 
 /** สุ่มลำดับด้วย Fisher–Yates */
 function fisherYates<T>(input: T[]): T[] {
@@ -39,15 +39,10 @@ export function entryLabel(entry: RosterEntry): string {
   return [entry.name1, entry.name2, entry.name3].filter(Boolean).join(' - ')
 }
 
-/**
- * สุ่มจับคู่แข่งขันรอบแรก (Seed 1) ระหว่างหน่วยแข่งขันทั้งหมด (คน/คู่/ทีม 3 คน) ที่มีสีกำหนดไว้แล้ว
- * โดยพยายามเลี่ยงไม่ให้คู่แข่งอยู่สีเดียวกัน ถ้าจำนวนเป็นเลขคี่ รายการสุดท้ายจะได้ "บาย" ผ่านเข้ารอบถัดไปฟรี
- */
-export function drawUnitBracket(result: ResultMap): BracketPair[] {
-  const units = COLORS.flatMap((color) =>
-    result[color].map((entry) => ({ label: entryLabel(entry), color })),
-  )
+type Unit = { label: string; color: ColorName }
 
+/** จับคู่หน่วยแข่งขันรอบแรกภายใน 1 กลุ่ม โดยพยายามเลี่ยงไม่ให้คู่แข่งอยู่สีเดียวกัน (ลองสุ่มใหม่สูงสุด 60 ครั้ง) ถ้าจำนวนเป็นเลขคี่ รายการสุดท้ายจะได้ "บาย" ผ่านเข้ารอบถัดไปฟรี */
+function pairUpUnits(units: Unit[]): BracketPair[] {
   let best: BracketPair[] | null = null
   let bestConflicts = Infinity
 
@@ -69,4 +64,18 @@ export function drawUnitBracket(result: ResultMap): BracketPair[] {
   }
 
   return best ?? []
+}
+
+/**
+ * สุ่มแบ่งหน่วยแข่งขันทั้งหมด (คน/คู่/ทีม 3 คน) ออกเป็น 2 สายแข่งขันแยกอิสระ (สาย A / สาย B) ขนาดใกล้เคียงกัน
+ * แล้วสุ่มจับคู่แข่งขันรอบแรกแยกภายในแต่ละสาย (พยายามเลี่ยงคู่สีเดียวกันเหมือนเดิม) — ใช้กับเทนนิส/แบดมินตัน/เปตอง (bracket mode)
+ */
+export function drawUnitBracketBySai(result: ResultMap): SaiBracket[] {
+  const units: Unit[] = COLORS.flatMap((color) => result[color].map((entry) => ({ label: entryLabel(entry), color })))
+  const shuffled = fisherYates(units)
+  const mid = Math.ceil(shuffled.length / 2)
+  return [
+    { sai: 'A', pairs: pairUpUnits(shuffled.slice(0, mid)) },
+    { sai: 'B', pairs: pairUpUnits(shuffled.slice(mid)) },
+  ]
 }

@@ -1,4 +1,4 @@
-import { COLOR_THEME, type BracketPair, type ColorName, type MatchOutcome } from '../types'
+import { COLOR_THEME, type BracketPair, type ColorName, type MatchOutcome, type SaiBracket } from '../types'
 import { computeStandings, isRoundRobinComplete, matchKey } from '../utils/standings'
 import { ColorDot } from './ColorBadge'
 import { TrophyIcon } from './Icons'
@@ -182,26 +182,49 @@ export function ColorBracketView({
   )
 }
 
-/** ตารางแข่งรอบแรกสำหรับประเภทเดี่ยว/คู่/ทีม 3 คน — สุ่มจับคู่ระหว่างหน่วยแข่งขัน */
-export function UnitBracketView({ pairs }: { pairs: BracketPair[] }) {
+function UnitPairCard({ p, index }: { p: BracketPair; index: number }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {pairs.map((p, i) => (
-        <div
-          key={i}
-          className="animate-popIn rounded-xl border border-surface-border bg-surface-card p-3 shadow-soft"
-          style={{ animationDelay: `${i * 40}ms` }}
-        >
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-mist-500">คู่ที่ {i + 1}</p>
-          <Side label={p.a.label} color={p.a.color} />
-          {p.b ? (
-            <>
-              <div className="my-1 text-center text-[10px] font-extrabold text-mist-600">VS</div>
-              <Side label={p.b.label} color={p.b.color} />
-            </>
+    <div
+      className="animate-popIn rounded-xl border border-surface-border bg-surface-card p-3 shadow-soft"
+      style={{ animationDelay: `${index * 40}ms` }}
+    >
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-mist-500">คู่ที่ {index + 1}</p>
+      <Side label={p.a.label} color={p.a.color} />
+      {p.b ? (
+        <>
+          <div className="my-1 text-center text-[10px] font-extrabold text-mist-600">VS</div>
+          <Side label={p.b.label} color={p.b.color} />
+        </>
+      ) : (
+        <div className="mt-1 rounded-lg bg-surface-raised px-2 py-1.5 text-center text-xs font-medium text-mist-500">
+          ผ่านเข้ารอบถัดไปอัตโนมัติ (บาย)
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** ตารางแข่งรอบแรกสำหรับประเภทเดี่ยว/คู่/ทีม 3 คน — สุ่มแบ่ง 2 สายแข่งขันแยกอิสระ (สาย A / สาย B) แล้วจับคู่รอบแรกในแต่ละสาย */
+export function UnitBracketView({ groups }: { groups: SaiBracket[] }) {
+  return (
+    <div className="space-y-5">
+      {groups.map((g) => (
+        <div key={g.sai}>
+          <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-mist-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-extrabold text-accent-contrast">
+              {g.sai}
+            </span>
+            สาย {g.sai} ({g.pairs.reduce((n, p) => n + (p.b ? 2 : 1), 0)} หน่วย)
+          </p>
+          {g.pairs.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-surface-borderLight px-3 py-4 text-center text-xs font-medium text-mist-500">
+              ไม่มีผู้เข้าแข่งขันในสายนี้
+            </div>
           ) : (
-            <div className="mt-1 rounded-lg bg-surface-raised px-2 py-1.5 text-center text-xs font-medium text-mist-500">
-              ผ่านเข้ารอบถัดไปอัตโนมัติ (บาย)
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {g.pairs.map((p, i) => (
+                <UnitPairCard key={i} p={p} index={i} />
+              ))}
             </div>
           )}
         </div>

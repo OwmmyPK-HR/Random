@@ -237,16 +237,20 @@ function bracketSheet(ev: SportEvent, state: EventState): XLSX.WorkSheet {
       complete ? `สี${standings[1].color}` : 'อันดับ 2 กลุ่ม',
     ])
   } else if (state.unitBracket) {
-    aoa.push(['คู่ที่', 'ผู้แข่งขัน / ทีม 1', 'สี', '', 'ผู้แข่งขัน / ทีม 2', 'สี'])
-    state.unitBracket.forEach((p: BracketPair, i: number) => {
-      aoa.push([
-        i + 1,
-        p.a.label,
-        `สี${p.a.color}`,
-        p.b ? 'vs' : '',
-        p.b ? p.b.label : 'ผ่านเข้ารอบถัดไป (บาย)',
-        p.b ? `สี${p.b.color}` : '',
-      ])
+    state.unitBracket.forEach((group, gi) => {
+      if (gi > 0) aoa.push([])
+      aoa.push([`สาย ${group.sai} (${group.pairs.reduce((n, p) => n + (p.b ? 2 : 1), 0)} หน่วย)`])
+      aoa.push(['คู่ที่', 'ผู้แข่งขัน / ทีม 1', 'สี', '', 'ผู้แข่งขัน / ทีม 2', 'สี'])
+      group.pairs.forEach((p: BracketPair, i: number) => {
+        aoa.push([
+          i + 1,
+          p.a.label,
+          `สี${p.a.color}`,
+          p.b ? 'vs' : '',
+          p.b ? p.b.label : 'ผ่านเข้ารอบถัดไป (บาย)',
+          p.b ? `สี${p.b.color}` : '',
+        ])
+      })
     })
   }
   const ws = XLSX.utils.aoa_to_sheet(aoa)

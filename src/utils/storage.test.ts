@@ -7,15 +7,31 @@ describe('sanitizeStoreShape', () => {
       '1.9': {
         roster: [{ id: 'a', color: 'ฟ้า', name1: 'สมชาย', name2: 'วิชัย' }],
         colorBracket: undefined,
-        unitBracket: [{ a: { label: 'สมชาย - วิชัย', color: 'ฟ้า' } }],
+        unitBracket: [
+          { sai: 'A', pairs: [{ a: { label: 'สมชาย - วิชัย', color: 'ฟ้า' } }] },
+          { sai: 'B', pairs: [] },
+        ],
         matchResults: undefined,
         drawnAt: '2026-01-01T00:00:00.000Z',
       },
     }
     const clean = sanitizeStoreShape(good)
     expect(clean['1.9'].roster).toHaveLength(1)
-    expect(clean['1.9'].unitBracket).toHaveLength(1)
+    expect(clean['1.9'].unitBracket).toHaveLength(2)
+    expect(clean['1.9'].unitBracket?.[0].pairs).toHaveLength(1)
     expect(clean['1.9'].drawnAt).toBe('2026-01-01T00:00:00.000Z')
+  })
+
+  it('drops a unitBracket saved in the old flat-pairs shape instead of crashing downstream code', () => {
+    // รูปแบบเก่า (ก่อนแบ่งสาย A/B): BracketPair[] ธรรมดา ไม่ใช่ { sai, pairs }[]
+    const oldShape = {
+      '1.9': {
+        roster: [],
+        unitBracket: [{ a: { label: 'สมชาย - วิชัย', color: 'ฟ้า' } }],
+      },
+    }
+    const clean = sanitizeStoreShape(oldShape)
+    expect(clean['1.9'].unitBracket).toBeUndefined()
   })
 
   it('drops roster entries with an invalid or missing color instead of throwing', () => {

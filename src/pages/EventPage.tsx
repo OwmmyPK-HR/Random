@@ -104,9 +104,9 @@ export function EventPage() {
       const [c0, c1] = state.colorBracket[0]
       return { a: { label: `สี${c0}`, color: c0 }, b: { label: `สี${c1}`, color: c1 } }
     }
-    if (ev.mode === 'bracket' && state.unitBracket?.[0]) {
-      const p = state.unitBracket[0]
-      return { a: p.a, b: p.b }
+    if (ev.mode === 'bracket' && state.unitBracket) {
+      const firstPair = state.unitBracket.flatMap((g) => g.pairs)[0]
+      if (firstPair) return { a: firstPair.a, b: firstPair.b }
     }
     return undefined
   }, [ev, state.colorBracket, state.unitBracket])
@@ -312,7 +312,7 @@ export function EventPage() {
           onSetResult={(a, b, outcome) => setMatchResult(code, a, b, outcome)}
         />
       )}
-      {ev.mode === 'bracket' && state.unitBracket && <UnitBracketView pairs={state.unitBracket} />}
+      {ev.mode === 'bracket' && state.unitBracket && <UnitBracketView groups={state.unitBracket} />}
     </section>
   )
 
@@ -357,7 +357,7 @@ export function EventPage() {
           <div className={`mx-1 h-0.5 flex-1 rounded ${hasData ? 'bg-team-green/60' : 'bg-surface-raised'}`} />
           <StepBadge n={2} active={hasData && !hasBracket} done={hasBracket} />
           <span className={`text-xs font-semibold ${hasBracket ? 'text-mist-100' : hasData ? 'text-mist-100' : 'text-mist-700'}`}>
-            สุ่มจับคู่แข่งขันรอบแรก (Seed 1)
+            สุ่มแบ่งสาย A/B แล้วจับคู่แข่งขันรอบแรก (Seed 1)
           </span>
         </div>
       )}

@@ -1,8 +1,8 @@
 import { COLORS, type ColorName, type EventState, type MatchOutcome, type RosterEntry, type StoreShape } from '../types'
 
-// เพิ่มเลขเวอร์ชันทุกครั้งที่โครงสร้างข้อมูลเปลี่ยนแบบไม่เข้ากันย้อนหลัง (เช่นเปลี่ยนรูปแบบ colorBracket)
+// เพิ่มเลขเวอร์ชันทุกครั้งที่โครงสร้างข้อมูลเปลี่ยนแบบไม่เข้ากันย้อนหลัง (เช่นเปลี่ยนรูปแบบ colorBracket/unitBracket)
 // เพื่อไม่ให้ข้อมูลเก่าที่ค้างอยู่ในเบราว์เซอร์ทำให้แอปพังตอนโหลด
-const KEY = 'tu-sportday-random-v2'
+const KEY = 'tu-sportday-random-v3'
 
 function isColorName(v: unknown): v is ColorName {
   return typeof v === 'string' && (COLORS as readonly string[]).includes(v)
@@ -37,18 +37,25 @@ function sanitizeMatchResults(v: unknown): Record<string, MatchOutcome> | undefi
   return Object.keys(out).length > 0 ? out : undefined
 }
 
+function isValidBracketPair(p: unknown): boolean {
+  if (!p || typeof p !== 'object') return false
+  const pair = p as Record<string, unknown>
+  const a = pair.a as Record<string, unknown> | undefined
+  if (!a || typeof a.label !== 'string' || !isColorName(a.color)) return false
+  if (pair.b !== undefined) {
+    const b = pair.b as Record<string, unknown>
+    if (!b || typeof b.label !== 'string' || !isColorName(b.color)) return false
+  }
+  return true
+}
+
 function isValidUnitBracket(v: unknown): v is NonNullable<EventState['unitBracket']> {
   if (!Array.isArray(v)) return false
-  return v.every((p) => {
-    if (!p || typeof p !== 'object') return false
-    const pair = p as Record<string, unknown>
-    const a = pair.a as Record<string, unknown> | undefined
-    if (!a || typeof a.label !== 'string' || !isColorName(a.color)) return false
-    if (pair.b !== undefined) {
-      const b = pair.b as Record<string, unknown>
-      if (!b || typeof b.label !== 'string' || !isColorName(b.color)) return false
-    }
-    return true
+  return v.every((g) => {
+    if (!g || typeof g !== 'object') return false
+    const group = g as Record<string, unknown>
+    if (group.sai !== 'A' && group.sai !== 'B') return false
+    return Array.isArray(group.pairs) && group.pairs.every(isValidBracketPair)
   })
 }
 

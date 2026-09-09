@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COLORS, type ColorName, type ResultMap, type RosterEntry } from '../types'
-import { drawRoundRobin, drawUnitBracket, entryLabel, groupRosterByColor } from './shuffle'
+import { drawRoundRobin, drawUnitBracketBySai, entryLabel, groupRosterByColor } from './shuffle'
 
 function entry(color: ColorName, name1: string): RosterEntry {
   return { id: `${color}-${name1}`, color, name1 }
@@ -59,32 +59,42 @@ describe('drawRoundRobin', () => {
   })
 })
 
-describe('drawUnitBracket', () => {
-  it('pairs every entry exactly once, and gives the last one a bye when the count is odd', () => {
+describe('drawUnitBracketBySai', () => {
+  it('splits every entry into exactly 2 groups (สาย A / สาย B), sized as evenly as possible', () => {
     const result: ResultMap = {
       ฟ้า: [entry('ฟ้า', 'A1'), entry('ฟ้า', 'A2')],
       ม่วง: [entry('ม่วง', 'B1')],
       ชมพู: [],
       เขียว: [entry('เขียว', 'D1'), entry('เขียว', 'D2')],
     }
-    const pairs = drawUnitBracket(result)
-    const totalUnits = 5
-    expect(pairs).toHaveLength(Math.ceil(totalUnits / 2))
+    const groups = drawUnitBracketBySai(result)
+    expect(groups.map((g) => g.sai)).toEqual(['A', 'B'])
 
+    const totalUnits = 5
+    const sizeOf = (g: (typeof groups)[number]) => g.pairs.reduce((n, p) => n + (p.b ? 2 : 1), 0)
+    const sizes = groups.map(sizeOf)
+    expect(sizes[0] + sizes[1]).toBe(totalUnits)
+    // แบ่งใกล้เคียงกัน (5 คน -> 3/2) ไม่ใช่กระจุกอยู่สายเดียว
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1)
+
+    // ทุกคนถูกจับเข้าคู่/บายครบ ไม่มีใครหาย ไม่มีใครซ้ำ
     const labelsSeen: string[] = []
-    let byes = 0
-    for (const p of pairs) {
-      labelsSeen.push(p.a.label)
-      if (p.b) labelsSeen.push(p.b.label)
-      else byes++
+    for (const g of groups) {
+      for (const p of g.pairs) {
+        labelsSeen.push(p.a.label)
+        if (p.b) labelsSeen.push(p.b.label)
+      }
     }
-    expect(byes).toBe(1) // จำนวนคี่ (5 คน) ต้องมี 1 บาย
     expect(labelsSeen.sort()).toEqual(['A1', 'A2', 'B1', 'D1', 'D2'].sort())
   })
 
-  it('returns no matches for an empty result map', () => {
+  it('returns 2 empty groups for an empty result map', () => {
     const empty: ResultMap = { ฟ้า: [], ม่วง: [], ชมพู: [], เขียว: [] }
-    expect(drawUnitBracket(empty)).toEqual([])
+    const groups = drawUnitBracketBySai(empty)
+    expect(groups).toEqual([
+      { sai: 'A', pairs: [] },
+      { sai: 'B', pairs: [] },
+    ])
   })
 })
 

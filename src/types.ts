@@ -52,6 +52,15 @@ export interface BracketPair {
   b?: { label: string; color: ColorName } // ไม่มี = bye (ผ่านเข้ารอบถัดไปฟรี)
 }
 
+// ประเภทเดี่ยว/คู่/ทีม 3 คน (เทนนิส/แบดมินตัน/เปตอง) แบ่งผู้เข้าแข่งขันเป็น 2 สายแข่งขันแยกอิสระ
+// สุ่มแบ่งให้อัตโนมัติตอนจับสลาก แล้วจับคู่รอบแรกแยกภายในแต่ละสาย
+export type SaiLabel = 'A' | 'B'
+
+export interface SaiBracket {
+  sai: SaiLabel
+  pairs: BracketPair[]
+}
+
 // ผลนัดพบกันหมด 1 คู่ — สีที่ชนะ หรือ 'draw' ถ้าเสมอ (กรอกเองหลังแข่งจริงจบ)
 export type MatchOutcome = ColorName | 'draw'
 
@@ -59,7 +68,7 @@ export interface EventState {
   roster: RosterEntry[]
   colorBracket?: [ColorName, ColorName][] // ตารางพบกันหมด 6 คู่ (สำหรับ colorTeam) — ที่เหลืออีก 2 นัด (ชิงที่ 3 + ชิงชนะเลิศ) รอผลรอบนี้ก่อน
   matchResults?: Record<string, MatchOutcome> // ผลแต่ละนัดพบกันหมด key = matchKey(a,b) — กรอกครบ 6 นัดแล้วระบบจะจัดอันดับ/เติมคู่ชิงให้อัตโนมัติ
-  unitBracket?: BracketPair[] // คู่แข่งขันรอบแรกที่สุ่มได้ (สำหรับ bracket mode)
+  unitBracket?: SaiBracket[] // สาย A / สาย B + คู่แข่งขันรอบแรกของแต่ละสาย (สำหรับ bracket mode)
   drawnAt?: string
 }
 
