@@ -7,17 +7,17 @@ html {
 }
 
 body {
-  background-color: #f7f7fa;
-  color: #181a26;
+  background-color: #0a0c14;
+  color: #f2f3f9;
 }
 
 ::selection {
-  background-color: #c9a227;
-  color: #fff;
+  background-color: #f2b33d;
+  color: #0a0c14;
 }
 
 *:focus-visible {
-  outline: 2px solid #9333ea;
+  outline: 2px solid #f2b33d;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -26,21 +26,30 @@ body {
   .bg-stripe {
     background-image: linear-gradient(90deg, #0284c7 0 25%, #9333ea 25% 50%, #db2777 50% 75%, #16a34a 75% 100%);
   }
-  .bg-shimmer {
-    background-image: linear-gradient(
-      100deg,
-      rgba(255, 255, 255, 0) 35%,
-      rgba(255, 255, 255, 0.75) 50%,
-      rgba(255, 255, 255, 0) 65%
-    );
-    background-size: 300% 100%;
+  /* พื้นผิวลายจุด HUD จาง ๆ ให้บรรยากาศเกมมิ่ง โดยไม่รบกวนการอ่าน */
+  .bg-hud {
+    background-image: radial-gradient(circle at 1px 1px, rgba(242, 179, 61, 0.14) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+  .corner-cut {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+  }
+  .corner-cut-sm {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  }
+  .eyebrow {
+    transform: skewX(-6deg);
+  }
+  .eyebrow > * {
+    display: inline-block;
+    transform: skewX(6deg);
   }
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
     width: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #dfe0e8;
+    background-color: #333756;
     border-radius: 9999px;
   }
 }

@@ -23,20 +23,20 @@ export function ResultBoard({ result, onRemove }: { result: ResultMap; onRemove?
         return (
           <div
             key={color}
-            className="animate-popIn overflow-hidden rounded-2xl border bg-white shadow-soft"
-            style={{ borderColor: theme.light, animationDelay: `${colIdx * 90}ms` }}
+            className="animate-popIn overflow-hidden rounded-2xl border bg-surface-card shadow-soft"
+            style={{ borderColor: `${theme.base}40`, animationDelay: `${colIdx * 90}ms` }}
           >
             <div
               className="flex items-center justify-between px-4 py-3"
               style={{ background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})` }}
             >
               <span className="font-extrabold text-white drop-shadow-sm">สี{color}</span>
-              <span className="rounded-full bg-white/25 px-2.5 py-0.5 text-xs font-extrabold text-white ring-1 ring-inset ring-white/40">
+              <span className="rounded-full bg-black/25 px-2.5 py-0.5 text-xs font-extrabold text-white ring-1 ring-inset ring-white/25">
                 {entries.length} รายการ
               </span>
             </div>
-            <ul className="max-h-80 divide-y divide-ink-50 overflow-y-auto scrollbar-thin">
-              {entries.length === 0 && <li className="px-4 py-6 text-center text-sm text-ink-300">ไม่มีรายการ</li>}
+            <ul className="max-h-80 divide-y divide-surface-border overflow-y-auto scrollbar-thin">
+              {entries.length === 0 && <li className="px-4 py-6 text-center text-sm text-mist-600">ไม่มีรายการ</li>}
               {entries.map((entry, i) => {
                 const { main, sub } = entryLabel(entry)
                 return (
@@ -48,19 +48,19 @@ export function ResultBoard({ result, onRemove }: { result: ResultMap; onRemove?
                       {initials(main)}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate font-medium text-ink-800">{main}</span>
-                      {sub && <span className="block truncate text-xs text-ink-400">{sub}</span>}
+                      <span className="block truncate font-medium text-mist-100">{main}</span>
+                      {sub && <span className="block truncate text-xs text-mist-500">{sub}</span>}
                     </span>
                     {onRemove ? (
                       <button
                         onClick={() => onRemove(entry.id)}
-                        className="ml-auto shrink-0 text-ink-300 hover:text-rose-500"
+                        className="ml-auto shrink-0 text-mist-600 hover:text-rose-400"
                         aria-label="ลบรายการนี้"
                       >
                         <TrashIcon size={13} />
                       </button>
                     ) : (
-                      <span className="ml-auto shrink-0 text-[11px] font-semibold text-ink-300">{i + 1}</span>
+                      <span className="ml-auto shrink-0 text-[11px] font-semibold text-mist-600">{i + 1}</span>
                     )}
                   </li>
                 )

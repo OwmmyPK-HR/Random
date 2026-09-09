@@ -11,9 +11,9 @@ export function SportGroupPage() {
 
   if (!group) {
     return (
-      <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-        <p className="text-ink-600">ไม่พบหมวดกีฬานี้</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-600 hover:underline">
+      <div className="rounded-2xl border border-surface-border bg-surface-card p-8 text-center">
+        <p className="text-mist-400">ไม่พบหมวดกีฬานี้</p>
+        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-gold-400 hover:underline">
           ← กลับหน้าแรก
         </Link>
       </div>
@@ -29,16 +29,16 @@ export function SportGroupPage() {
   return (
     <div className="space-y-5">
       <div>
-        <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-ink-400 hover:text-brand-600">
+        <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-gold-400">
           <ArrowLeftIcon size={13} /> ประเภทกีฬาทั้งหมด
         </Link>
         <div className="mt-2 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-soft">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400 text-surface-canvas shadow-glowGold">
             {Icon && <Icon size={24} />}
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-ink-900">{group.name}</h1>
-            <p className="text-sm text-ink-400">
+            <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">{group.name}</h1>
+            <p className="text-sm text-mist-500">
               {group.events.length} รายการแข่งขัน · จับคู่แล้ว {done}/{group.events.length}
             </p>
           </div>

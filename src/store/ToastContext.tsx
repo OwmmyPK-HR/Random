@@ -38,10 +38,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className={`flex animate-popIn items-start gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium shadow-pop ${
               t.kind === 'success'
-                ? 'border-green-200 bg-green-50 text-green-800'
+                ? 'border-team-green-dim bg-surface-card text-team-green-soft'
                 : t.kind === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-800'
-                  : 'border-ink-700 bg-ink-800 text-white'
+                  ? 'border-rose-900 bg-surface-card text-rose-300'
+                  : 'border-surface-border bg-surface-raised text-mist-100'
             }`}
           >
             <span className="mt-0.5 shrink-0">

@@ -65,7 +65,7 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
   return (
     <span
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-        done ? 'bg-green-500 text-white' : active ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-400'
+        done ? 'bg-team-green text-white' : active ? 'bg-gold-400 text-surface-canvas' : 'bg-surface-raised text-mist-600'
       }`}
     >
       {done ? <CheckCircleIcon size={15} /> : n}
@@ -96,9 +96,9 @@ export function EventPage() {
 
   if (!ev) {
     return (
-      <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-        <p className="text-ink-600">ไม่พบประเภทกีฬานี้</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-600 hover:underline">
+      <div className="rounded-2xl border border-surface-border bg-surface-card p-8 text-center">
+        <p className="text-mist-400">ไม่พบประเภทกีฬานี้</p>
+        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-gold-400 hover:underline">
           ← กลับหน้าแรก
         </Link>
       </div>
@@ -144,53 +144,53 @@ export function EventPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link to={`/sport/${ev.groupSlug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-400 hover:text-brand-600">
+        <Link to={`/sport/${ev.groupSlug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-gold-400">
           <ArrowLeftIcon size={13} /> {ev.sportGroup}
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-extrabold text-ink-900">{ev.name}</h1>
-          <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-semibold text-ink-600">{headline}</span>
+          <h1 className="text-2xl font-extrabold text-mist-100">{ev.name}</h1>
+          <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-mist-400">{headline}</span>
           {ev.mode === 'colorTeam' && (
-            <span className="rounded-full bg-team-blue-light px-2.5 py-0.5 text-xs font-semibold text-team-blue-dark">แบ่งตามสีทีม</span>
+            <span className="rounded-full bg-team-blue/15 px-2.5 py-0.5 text-xs font-semibold text-team-blue-soft">แบ่งตามสีทีม</span>
           )}
         </div>
       </div>
 
       {/* STEP TRACKER */}
-      <div className="flex items-center gap-2 rounded-2xl border border-ink-100 bg-white px-4 py-3 shadow-soft">
+      <div className="flex items-center gap-2 rounded-2xl border border-surface-border bg-surface-card px-4 py-3 shadow-soft">
         <StepBadge n={1} active={!hasData} done={hasData} />
-        <span className={`text-xs font-semibold ${hasData ? 'text-ink-700' : 'text-ink-900'}`}>รายชื่อนักกีฬา (แยกตามสี)</span>
-        <div className={`mx-1 h-0.5 flex-1 rounded ${hasData ? 'bg-green-400' : 'bg-ink-100'}`} />
+        <span className={`text-xs font-semibold ${hasData ? 'text-mist-300' : 'text-mist-100'}`}>รายชื่อนักกีฬา (แยกตามสี)</span>
+        <div className={`mx-1 h-0.5 flex-1 rounded ${hasData ? 'bg-team-green/60' : 'bg-surface-raised'}`} />
         <StepBadge n={2} active={hasData && !hasBracket} done={hasBracket} />
-        <span className={`text-xs font-semibold ${hasBracket ? 'text-ink-900' : hasData ? 'text-ink-900' : 'text-ink-300'}`}>
+        <span className={`text-xs font-semibold ${hasBracket ? 'text-mist-100' : hasData ? 'text-mist-100' : 'text-mist-700'}`}>
           สุ่มจับคู่แข่งขันรอบแรก (Seed 1)
         </span>
       </div>
 
       {/* ส่วนนำเข้าข้อมูล */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+      <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="font-bold text-ink-900">รายชื่อนักกีฬา</h2>
-            <p className="text-xs text-ink-400">แต่ละสีมีนักกีฬา/ทีมของตัวเองอยู่แล้ว — กรอกชื่อแยกตามสีที่ถูกต้อง</p>
+            <h2 className="font-bold text-mist-100">รายชื่อนักกีฬา</h2>
+            <p className="text-xs text-mist-500">แต่ละสีมีนักกีฬา/ทีมของตัวเองอยู่แล้ว — กรอกชื่อแยกตามสีที่ถูกต้อง</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => downloadSingleTemplate(ev, state.roster)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-ink-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-surface-borderLight px-3 py-1.5 text-xs font-semibold text-mist-300 hover:bg-surface-raised"
             >
               <DownloadIcon size={13} /> ดาวน์โหลดฟอร์ม
             </button>
             <button
               onClick={() => setQuickAddOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-ink-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-surface-borderLight px-3 py-1.5 text-xs font-semibold text-mist-300 hover:bg-surface-raised"
             >
               <PencilIcon size={13} /> พิมพ์รายชื่อเอง
             </button>
             {state.roster.length > 0 && (
               <button
                 onClick={() => setConfirmClear(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-rose-900/60 px-3 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/10"
               >
                 <TrashIcon size={13} /> ลบทั้งหมด
               </button>
@@ -199,8 +199,8 @@ export function EventPage() {
         </div>
 
         {quickAddOpen && (
-          <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50 p-3">
-            <p className="mb-2 text-xs font-semibold text-ink-500">เลือกสีที่จะเพิ่มรายชื่อ</p>
+          <div className="mt-3 rounded-xl border border-surface-border bg-surface-sunken p-3">
+            <p className="mb-2 text-xs font-semibold text-mist-400">เลือกสีที่จะเพิ่มรายชื่อ</p>
             <div className="mb-3 flex flex-wrap gap-1.5">
               {COLORS.map((c) => {
                 const theme = COLOR_THEME[c]
@@ -212,8 +212,8 @@ export function EventPage() {
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all"
                     style={
                       active
-                        ? { background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})`, color: 'white' }
-                        : { backgroundColor: theme.light, color: theme.dark, opacity: 0.7 }
+                        ? { background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})`, color: 'white', boxShadow: `0 0 14px ${theme.base}55` }
+                        : { backgroundColor: theme.light, color: theme.dark, opacity: 0.6 }
                     }
                   >
                     <ColorDot color={c} size={8} />
@@ -222,16 +222,16 @@ export function EventPage() {
                 )
               })}
             </div>
-            <p className="mb-1.5 text-xs font-medium text-ink-500">{SHAPE_LABEL[ev.entryShape]}</p>
+            <p className="mb-1.5 text-xs font-medium text-mist-400">{SHAPE_LABEL[ev.entryShape]}</p>
             <textarea
               value={quickAddText[activeColor]}
               onChange={(e) => setQuickAddText((prev) => ({ ...prev, [activeColor]: e.target.value }))}
               placeholder={SHAPE_PLACEHOLDER[ev.entryShape]}
               rows={4}
-              className="w-full rounded-lg border border-ink-200 bg-white p-2.5 text-sm focus:border-brand-600 focus:outline-none"
+              className="w-full rounded-lg border border-surface-borderLight bg-surface-card p-2.5 text-sm text-mist-100 placeholder:text-mist-700 focus:border-gold-400 focus:outline-none"
             />
             <div className="mt-2 flex justify-end gap-2">
-              <button onClick={() => setQuickAddOpen(false)} className="px-3 py-1.5 text-xs font-semibold text-ink-500">
+              <button onClick={() => setQuickAddOpen(false)} className="px-3 py-1.5 text-xs font-semibold text-mist-500">
                 ปิด
               </button>
               <button
@@ -253,7 +253,7 @@ export function EventPage() {
       {/* รายชื่อแยกตามสี — แสดงทันทีตามข้อมูลจริง ไม่ต้องสุ่ม */}
       {hasData && (
         <section className="space-y-3">
-          <h2 className="font-bold text-ink-900">รายชื่อแยกตามสี</h2>
+          <h2 className="font-bold text-mist-100">รายชื่อแยกตามสี</h2>
           <ResultBoard result={grouped} onRemove={(id) => removeEntry(code, id)} />
         </section>
       )}
@@ -263,7 +263,7 @@ export function EventPage() {
         <button
           onClick={() => (hasBracket ? setConfirmRedraw(true) : doDraw())}
           disabled={!hasData || isDrawing}
-          className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-card disabled:pointer-events-none disabled:translate-y-0 disabled:bg-ink-200 disabled:text-ink-400 disabled:shadow-none"
+          className="inline-flex items-center gap-2 rounded-xl bg-gold-400 px-5 py-2.5 text-sm font-bold text-surface-canvas shadow-glowGold transition hover:-translate-y-0.5 hover:bg-gold-300 disabled:pointer-events-none disabled:translate-y-0 disabled:bg-surface-raised disabled:text-mist-600 disabled:shadow-none"
         >
           <DiceIcon size={17} className={isDrawing ? 'animate-tumble' : ''} />
           {isDrawing ? 'กำลังสุ่มจับคู่...' : hasBracket ? 'สุ่มจับคู่ใหม่' : 'สุ่มจับคู่แข่งขัน'}
@@ -271,29 +271,29 @@ export function EventPage() {
         {hasBracket && !isDrawing && (
           <button
             onClick={() => exportEventResult(ev, state)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-4 py-2.5 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
           >
             <DownloadIcon size={15} /> ส่งออกผลเป็น Excel
           </button>
         )}
         {state.drawnAt && !isDrawing && (
-          <span className="text-xs text-ink-400">
+          <span className="text-xs text-mist-600">
             สุ่มล่าสุด: {new Date(state.drawnAt).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
           </span>
         )}
       </section>
 
       {isDrawing && (
-        <section className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-brand-200 bg-brand-50/40 py-14">
-          <DiceIcon size={40} className="animate-tumble text-brand-600" />
-          <p className="text-sm font-semibold text-brand-600">กำลังสุ่มจับคู่แข่งขัน...</p>
+        <section className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gold-400/30 bg-gold-400/5 py-14">
+          <DiceIcon size={40} className="animate-tumble text-gold-400" />
+          <p className="text-sm font-semibold text-gold-300">กำลังสุ่มจับคู่แข่งขัน...</p>
         </section>
       )}
 
       {hasBracket && !isDrawing && (
         <section className="space-y-4">
-          <h2 className="flex items-center gap-1.5 font-bold text-ink-900">
-            <TrophyIcon size={17} className="text-gold-500" /> คู่แข่งขันรอบแรก (Seed 1)
+          <h2 className="flex items-center gap-1.5 font-bold text-mist-100">
+            <TrophyIcon size={17} className="text-gold-400" /> คู่แข่งขันรอบแรก (Seed 1)
           </h2>
           {ev.mode === 'colorTeam' && state.colorBracket && <ColorBracketView colors={state.colorBracket} />}
           {ev.mode === 'bracket' && state.unitBracket && <UnitBracketView pairs={state.unitBracket} />}

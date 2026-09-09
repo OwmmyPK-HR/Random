@@ -24,14 +24,18 @@ export function UploadBox({ onFile, label }: { onFile: (file: File) => void; lab
       }}
       onClick={() => inputRef.current?.click()}
       className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all ${
-        dragOver ? 'scale-[1.01] border-brand-600 bg-brand-50' : 'border-ink-200 bg-ink-50/60 hover:border-ink-300 hover:bg-ink-50'
+        dragOver ? 'scale-[1.01] border-gold-400 bg-gold-400/5' : 'border-surface-borderLight bg-surface-sunken hover:border-mist-600'
       }`}
     >
-      <div className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${dragOver ? 'bg-brand-600 text-white' : 'bg-white text-ink-400 shadow-soft'}`}>
+      <div
+        className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+          dragOver ? 'bg-gold-400 text-surface-canvas' : 'bg-surface-raised text-mist-500'
+        }`}
+      >
         <UploadIcon size={20} />
       </div>
-      <p className="text-sm font-semibold text-ink-700">{label ?? 'ลากไฟล์ Excel มาวาง หรือคลิกเพื่อเลือกไฟล์'}</p>
-      <p className="text-xs text-ink-400">รองรับไฟล์ .xlsx / .xls</p>
+      <p className="text-sm font-semibold text-mist-200">{label ?? 'ลากไฟล์ Excel มาวาง หรือคลิกเพื่อเลือกไฟล์'}</p>
+      <p className="text-xs text-mist-600">รองรับไฟล์ .xlsx / .xls</p>
       <input
         ref={inputRef}
         type="file"

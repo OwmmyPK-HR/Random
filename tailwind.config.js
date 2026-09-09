@@ -7,46 +7,57 @@ export default {
         sans: ['Kanit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        ink: {
-          50: '#F7F7FA',
-          100: '#EEEEF3',
-          200: '#DFE0E8',
-          300: '#C3C5D2',
-          400: '#9A9DB0',
-          500: '#71748A',
-          600: '#53556A',
-          700: '#3D3F52',
-          800: '#282A3B',
-          900: '#181A26',
+        // พื้นผิว HUD มืด — โทนหลักของระบบ
+        surface: {
+          canvas: '#0A0C14',
+          sunken: '#070810',
+          card: '#12141F',
+          raised: '#1B1E2E',
+          border: '#242840',
+          borderLight: '#333756',
         },
+        // ตัวอักษรบนพื้นมืด
+        mist: {
+          100: '#F2F3F9',
+          300: '#B7BBD4',
+          400: '#9297B4',
+          500: '#767B9B',
+          600: '#5A5F7C',
+          700: '#3F4258',
+        },
+        // ทองคำ — accent หลักของระบบ (ถ้วยรางวัล/ชัยชนะ)
+        gold: {
+          300: '#F8D889',
+          400: '#F2B33D',
+          500: '#E0A020',
+          600: '#B87F16',
+          700: '#8A5F10',
+        },
+        // ครั่ง TU — โทนรองใช้เป็น undertone/gradient
         brand: {
-          50: '#FCE9EA',
-          100: '#F6C6C9',
-          200: '#EEA3A8',
-          300: '#DD7079',
-          400: '#A8323F',
-          500: '#8A2530',
+          400: '#B23A48',
+          500: '#96222F',
           600: '#7A1F2B',
           700: '#5C1721',
           800: '#3D0F16',
-        },
-        gold: {
-          400: '#E0BC53',
-          500: '#C9A227',
-          600: '#A9841C',
+          900: '#270A0F',
         },
         team: {
-          blue: { DEFAULT: '#0284C7', light: '#E0F2FE', dark: '#075985' },
-          purple: { DEFAULT: '#9333EA', light: '#F3E8FF', dark: '#6B21A8' },
-          pink: { DEFAULT: '#DB2777', light: '#FCE7F3', dark: '#9D174D' },
-          green: { DEFAULT: '#16A34A', light: '#DCFCE7', dark: '#166534' },
+          blue: { DEFAULT: '#0284C7', soft: '#38BDF8', dim: '#0C4A6E' },
+          purple: { DEFAULT: '#9333EA', soft: '#C084FC', dim: '#4C1D95' },
+          pink: { DEFAULT: '#DB2777', soft: '#F472B6', dim: '#831843' },
+          green: { DEFAULT: '#16A34A', soft: '#4ADE80', dim: '#14532D' },
         },
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(24, 26, 38, 0.04), 0 4px 12px rgba(24, 26, 38, 0.05)',
-        card: '0 8px 24px rgba(24, 26, 38, 0.08), 0 2px 6px rgba(24, 26, 38, 0.04)',
-        pop: '0 16px 40px rgba(24, 26, 38, 0.14)',
-        glow: '0 0 0 4px',
+        soft: '0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.35)',
+        card: '0 10px 30px rgba(0,0,0,.45)',
+        pop: '0 24px 60px rgba(0,0,0,.55)',
+        glowGold: '0 0 0 1px rgba(242,179,61,.4), 0 0 24px rgba(242,179,61,.35)',
+        glowBlue: '0 0 24px rgba(56,189,248,.35)',
+        glowPurple: '0 0 24px rgba(192,132,252,.35)',
+        glowPink: '0 0 24px rgba(244,114,182,.35)',
+        glowGreen: '0 0 24px rgba(74,222,128,.35)',
       },
       keyframes: {
         popIn: {
@@ -57,10 +68,6 @@ export default {
           '0%': { opacity: 0 },
           '100%': { opacity: 1 },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '-300% 0' },
-          '100%': { backgroundPosition: '300% 0' },
-        },
         floaty: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
@@ -69,22 +76,23 @@ export default {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
         },
-        pulseRing: {
-          '0%': { boxShadow: '0 0 0 0 rgba(122,31,43,0.35)' },
-          '100%': { boxShadow: '0 0 0 12px rgba(122,31,43,0)' },
+        pulseGlow: {
+          '0%, 100%': { opacity: 0.55 },
+          '50%': { opacity: 1 },
+        },
+        drift: {
+          '0%': { transform: 'translate(0,0)' },
+          '50%': { transform: 'translate(-2%, 2%)' },
+          '100%': { transform: 'translate(0,0)' },
         },
       },
       animation: {
         popIn: 'popIn 0.4s cubic-bezier(0.16,1,0.3,1) both',
         fadeIn: 'fadeIn 0.3s ease-out both',
-        shimmer: 'shimmer 2s linear infinite',
         floaty: 'floaty 3s ease-in-out infinite',
         tumble: 'tumble 0.7s cubic-bezier(0.65,0,0.35,1) infinite',
-        pulseRing: 'pulseRing 1.6s cubic-bezier(0,0,0.2,1) infinite',
-      },
-      backgroundImage: {
-        'grid-fade':
-          'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(247,247,250,1) 100%), radial-gradient(circle at 1px 1px, rgba(24,26,38,0.06) 1px, transparent 0)',
+        pulseGlow: 'pulseGlow 2.2s ease-in-out infinite',
+        drift: 'drift 12s ease-in-out infinite',
       },
     },
   },
