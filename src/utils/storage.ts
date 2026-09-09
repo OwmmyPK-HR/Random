@@ -62,6 +62,8 @@ function sanitizeEventState(raw: unknown): EventState | null {
     matchResults: sanitizeMatchResults(r.matchResults),
     unitBracket: isValidUnitBracket(r.unitBracket) ? r.unitBracket : undefined,
     drawnAt: typeof r.drawnAt === 'string' ? r.drawnAt : undefined,
+    date: typeof r.date === 'string' ? r.date : undefined,
+    venue: typeof r.venue === 'string' ? r.venue : undefined,
   }
 }
 

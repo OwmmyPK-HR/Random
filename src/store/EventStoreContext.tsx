@@ -14,6 +14,7 @@ interface Ctx {
   bulkSetRoster: (rosters: Record<string, RosterEntry[]>, mode: 'replace' | 'merge') => void
   drawBracket: (code: string) => void
   setMatchResult: (code: string, a: ColorName, b: ColorName, outcome: MatchOutcome | null) => void
+  setSchedule: (code: string, patch: { date?: string; venue?: string }) => void
   resetEvent: (code: string) => void
   resetAll: () => void
   replaceStore: (next: StoreShape) => void
@@ -32,10 +33,13 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
 
   const getEvent = useCallback((code: string) => store[code] ?? EMPTY, [store])
 
+  // ล้างเฉพาะผลจับสลาก/ผลแข่งขัน — "date"/"venue" (กำหนดการ) เป็นข้อมูลแยกอิสระจากรายชื่อ/ผลจับสลาก ไม่ต้องล้างตาม
+  const clearDrawFields = { colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined } as const
+
   const setRoster = useCallback((code: string, roster: RosterEntry[]) => {
     setStore((prev) => ({
       ...prev,
-      [code]: { roster, colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined },
+      [code]: { ...prev[code], roster, ...clearDrawFields },
     }))
   }, [])
 
@@ -44,11 +48,9 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     setStore((prev) => ({
       ...prev,
       [code]: {
+        ...prev[code],
         roster: [...(prev[code]?.roster ?? []), ...entries],
-        colorBracket: undefined,
-        matchResults: undefined,
-        unitBracket: undefined,
-        drawnAt: undefined,
+        ...clearDrawFields,
       },
     }))
   }, [])
@@ -57,11 +59,9 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     setStore((prev) => ({
       ...prev,
       [code]: {
+        ...prev[code],
         roster: (prev[code]?.roster ?? []).filter((r) => r.id !== id),
-        colorBracket: undefined,
-        matchResults: undefined,
-        unitBracket: undefined,
-        drawnAt: undefined,
+        ...clearDrawFields,
       },
     }))
   }, [])
@@ -71,16 +71,9 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       const next = { ...prev }
       for (const [code, roster] of Object.entries(rosters)) {
         if (mode === 'merge' && next[code]?.roster?.length) {
-          next[code] = {
-            ...next[code],
-            roster: [...next[code].roster, ...roster],
-            colorBracket: undefined,
-            matchResults: undefined,
-            unitBracket: undefined,
-            drawnAt: undefined,
-          }
+          next[code] = { ...next[code], roster: [...next[code].roster, ...roster], ...clearDrawFields }
         } else {
-          next[code] = { roster, colorBracket: undefined, matchResults: undefined, unitBracket: undefined, drawnAt: undefined }
+          next[code] = { ...next[code], roster, ...clearDrawFields }
         }
       }
       return next
@@ -100,7 +93,7 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       const unitBracket = ev.mode === 'bracket' ? drawUnitBracket(grouped) : undefined
       return {
         ...prev,
-        [code]: { roster, colorBracket, matchResults: undefined, unitBracket, drawnAt: new Date().toISOString() },
+        [code]: { ...prev[code], roster, colorBracket, matchResults: undefined, unitBracket, drawnAt: new Date().toISOString() },
       }
     })
   }, [])
@@ -118,16 +111,18 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  /** ตั้ง/แก้วันที่และสถานที่แข่งขันจริง — ไม่กระทบรายชื่อหรือผลจับสลากที่มีอยู่ */
+  const setSchedule = useCallback((code: string, patch: { date?: string; venue?: string }) => {
+    setStore((prev) => ({
+      ...prev,
+      [code]: { ...(prev[code] ?? EMPTY), ...patch },
+    }))
+  }, [])
+
   const resetEvent = useCallback((code: string) => {
     setStore((prev) => ({
       ...prev,
-      [code]: {
-        roster: prev[code]?.roster ?? [],
-        colorBracket: undefined,
-        matchResults: undefined,
-        unitBracket: undefined,
-        drawnAt: undefined,
-      },
+      [code]: { ...prev[code], roster: prev[code]?.roster ?? [], ...clearDrawFields },
     }))
   }, [])
 
@@ -151,11 +146,25 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       bulkSetRoster,
       drawBracket,
       setMatchResult,
+      setSchedule,
       resetEvent,
       resetAll,
       replaceStore,
     }),
-    [store, getEvent, setRoster, addEntries, removeEntry, bulkSetRoster, drawBracket, setMatchResult, resetEvent, resetAll, replaceStore],
+    [
+      store,
+      getEvent,
+      setRoster,
+      addEntries,
+      removeEntry,
+      bulkSetRoster,
+      drawBracket,
+      setMatchResult,
+      setSchedule,
+      resetEvent,
+      resetAll,
+      replaceStore,
+    ],
   )
 
   return <EventStoreCtx.Provider value={value}>{children}</EventStoreCtx.Provider>

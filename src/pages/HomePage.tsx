@@ -7,15 +7,18 @@ import { useToast } from '../store/ToastContext'
 import { downloadAllTemplates, exportAllResults, parseWorkbookFile } from '../utils/excel'
 import { eventsWithDataCount, randomizedCount, totalHeadcount } from '../utils/stats'
 import { groupRosterByColor } from '../utils/shuffle'
+import { formatThaiDateFull } from '../utils/date'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import { TeamColorCards } from '../components/TeamColorCards'
 import { ShowcasePanel } from '../components/ShowcasePanel'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import {
+  CalendarIcon,
   ChartIcon,
   CheckCircleIcon,
   ChevronRightIcon,
   DownloadIcon,
+  MapPinIcon,
   SPORT_ICON,
   TrashIcon,
   TrophyIcon,
@@ -54,6 +57,11 @@ export function HomePage() {
   const colorCounts = Object.fromEntries(
     COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + groupRosterByColor(store[ev.code]?.roster ?? [])[c].length, 0)]),
   ) as Record<(typeof COLORS)[number], number>
+
+  const upcoming = EVENTS.map((ev) => ({ ev, state: store[ev.code] }))
+    .filter((x) => !!x.state?.date)
+    .sort((a, b) => a.state!.date!.localeCompare(b.state!.date!))
+    .slice(0, 4)
 
   const handleBulkFile = async (file: File) => {
     try {
@@ -133,6 +141,49 @@ export function HomePage() {
 
       {/* TEAM COLOR CARDS */}
       <TeamColorCards />
+
+      {/* UPCOMING SCHEDULE */}
+      {upcoming.length > 0 && (
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-mist-300">
+              <CalendarIcon size={15} className="text-accent" /> ตารางแข่งขันเร็ว ๆ นี้
+            </h2>
+            <Link to="/schedule" className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
+              ดูทั้งหมด <ChevronRightIcon size={13} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {upcoming.map(({ ev, state }) => {
+              const Icon = SPORT_ICON[ev.sportGroup]
+              return (
+              <Link
+                key={ev.code}
+                to={`/event/${ev.code}`}
+                className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface-sunken px-3 py-2.5 hover:border-accent/40"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-surface-raised dark:text-accent">
+                  {Icon && <Icon size={17} />}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-mist-100">
+                    {ev.sportGroup} · {ev.name}
+                  </p>
+                  <p className="truncate text-xs text-mist-500">
+                    {formatThaiDateFull(state!.date!)}
+                    {state?.venue && (
+                      <span className="ml-1.5 inline-flex items-center gap-0.5">
+                        <MapPinIcon size={10} /> {state.venue}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* STATS */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">

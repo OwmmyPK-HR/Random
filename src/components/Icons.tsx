@@ -20,6 +20,20 @@ function Base({ size = 20, children, ...props }: IconProps & { children: React.R
   )
 }
 
+export const CalendarIcon = (p: IconProps) => (
+  <Base {...p}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+    <path d="M3.5 9.5h17M8 3v4M16 3v4" />
+  </Base>
+)
+
+export const MapPinIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21Z" />
+    <circle cx="12" cy="9.5" r="2.3" />
+  </Base>
+)
+
 export const PrinterIcon = (p: IconProps) => (
   <Base {...p}>
     <path d="M6 9V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5" />

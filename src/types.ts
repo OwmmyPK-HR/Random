@@ -61,6 +61,8 @@ export interface EventState {
   matchResults?: Record<string, MatchOutcome> // ผลแต่ละนัดพบกันหมด key = matchKey(a,b) — กรอกครบ 6 นัดแล้วระบบจะจัดอันดับ/เติมคู่ชิงให้อัตโนมัติ
   unitBracket?: BracketPair[] // คู่แข่งขันรอบแรกที่สุ่มได้ (สำหรับ bracket mode)
   drawnAt?: string
+  date?: string // วันที่แข่งขันจริง (yyyy-mm-dd) — กรอกเองแยกจากการจับสลาก
+  venue?: string // สถานที่แข่งขัน — กรอกเอง
 }
 
 export type StoreShape = Record<string, EventState>

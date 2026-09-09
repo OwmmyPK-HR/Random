@@ -4,6 +4,7 @@ import { COLORS } from '../types'
 import type { BracketPair, EntryShape, EventState, ResultMap, RosterEntry, SportEvent, StoreShape } from '../types'
 import { groupRosterByColor } from './shuffle'
 import { computeStandings, isRoundRobinComplete, matchKey } from './standings'
+import { formatThaiDateFull } from './date'
 
 // แต่ละสีมีคอลัมน์ของตัวเอง เรียงติดกัน 4 บล็อก (ฟ้า | ม่วง | ชมพู | เขียว)
 // ผู้ใช้กรอกรายชื่อของสีไหนก็ลงคอลัมน์ของสีนั้นโดยตรง ไม่ต้องพิมพ์ชื่อสีเอง — จำนวนแต่ละสีไม่ต้องเท่ากัน
@@ -270,7 +271,7 @@ export function exportAllResults(store: StoreShape) {
   const wb = XLSX.utils.book_new()
 
   const summaryAoa: (string | number)[][] = [
-    ['หมวดกีฬา', 'รายการ', 'ประเภท', 'รุ่นอายุ', 'สีฟ้า', 'สีม่วง', 'สีชมพู', 'สีเขียว', 'รวม', 'สถานะ'],
+    ['หมวดกีฬา', 'รายการ', 'ประเภท', 'รุ่นอายุ', 'สีฟ้า', 'สีม่วง', 'สีชมพู', 'สีเขียว', 'รวม', 'สถานะ', 'วันที่แข่งขัน', 'สถานที่'],
   ]
 
   let anyData = false
@@ -292,6 +293,8 @@ export function exportAllResults(store: StoreShape) {
       counts[3],
       total,
       total === 0 ? 'ไม่มีข้อมูล' : drawn ? 'จับคู่แล้ว' : 'รอจับคู่',
+      state?.date ? formatThaiDateFull(state.date) : '-',
+      state?.venue ?? '-',
     ])
     if (total > 0) anyData = true
   }
@@ -299,6 +302,7 @@ export function exportAllResults(store: StoreShape) {
   summaryWs['!cols'] = [
     { wch: 14 }, { wch: 26 }, { wch: 8 }, { wch: 14 },
     { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 10 },
+    { wch: 26 }, { wch: 26 },
   ]
   XLSX.utils.book_append_sheet(wb, summaryWs, 'สรุปทุกประเภท')
 

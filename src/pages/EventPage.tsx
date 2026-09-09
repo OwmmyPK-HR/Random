@@ -11,12 +11,15 @@ import { ColorDot } from '../components/ColorBadge'
 import { DrawAnimation } from '../components/DrawAnimation'
 import { downloadSingleTemplate, exportEventResult, parseWorkbookFileForEvent } from '../utils/excel'
 import { entryLabel, groupRosterByColor } from '../utils/shuffle'
+import { formatThaiDateFull } from '../utils/date'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
 import {
   ArrowLeftIcon,
+  CalendarIcon,
   CheckCircleIcon,
   DiceIcon,
   DownloadIcon,
+  MapPinIcon,
   PencilIcon,
   PrinterIcon,
   TrashIcon,
@@ -78,7 +81,7 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
 export function EventPage() {
   const { code = '' } = useParams()
   const ev = getEventByCode(code)
-  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, setMatchResult, resetEvent } = useEventStore()
+  const { getEvent, setRoster, addEntries, removeEntry, drawBracket, setMatchResult, setSchedule, resetEvent } = useEventStore()
   const { notify } = useToast()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [activeColor, setActiveColor] = useState<ColorName>('ฟ้า')
@@ -156,6 +159,43 @@ export function EventPage() {
     drawBracket(code) // คำนวณผลจริงทันที เก็บไว้เงียบ ๆ ก่อน — แอนิเมชันด้านล่างจะค่อย ๆ เผยผลนี้
     setIsDrawing(true)
   }
+
+  const scheduleSection = (
+    <section className="rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
+      <div className="no-print grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-mist-400">
+            <CalendarIcon size={13} /> วันที่แข่งขัน
+          </span>
+          <input
+            type="date"
+            value={state.date ?? ''}
+            onChange={(e) => setSchedule(code, { date: e.target.value || undefined })}
+            className="w-full rounded-lg border border-surface-borderLight bg-surface-sunken px-3 py-2 text-sm text-mist-100 focus:border-accent focus:outline-none"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-mist-400">
+            <MapPinIcon size={13} /> สถานที่แข่งขัน
+          </span>
+          <input
+            type="text"
+            value={state.venue ?? ''}
+            onChange={(e) => setSchedule(code, { venue: e.target.value || undefined })}
+            placeholder="เช่น สนามฟุตบอล มธ. ศูนย์รังสิต"
+            className="w-full rounded-lg border border-surface-borderLight bg-surface-sunken px-3 py-2 text-sm text-mist-100 placeholder:text-mist-600 focus:border-accent focus:outline-none"
+          />
+        </label>
+      </div>
+      {(state.date || state.venue) && (
+        <p className="hidden items-center gap-1.5 text-sm font-semibold text-mist-100 print:flex">
+          {state.date && formatThaiDateFull(state.date)}
+          {state.date && state.venue && ' · '}
+          {state.venue}
+        </p>
+      )}
+    </section>
+  )
 
   const rosterSection = (
     <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
@@ -341,6 +381,8 @@ export function EventPage() {
           </button>
         )}
       </div>
+
+      {scheduleSection}
 
       {/* STEP TRACKER */}
       {isColorTeam ? (
