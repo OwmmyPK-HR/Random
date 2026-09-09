@@ -157,7 +157,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
 
       <footer className="border-t border-surface-border bg-surface-sunken py-6 text-center text-xs text-mist-600">
-        TU Sport Day 2026 · ระบบทำงานบนเบราว์เซอร์ทั้งหมด ข้อมูลถูกเก็บไว้ในเครื่องของคุณเท่านั้น
+        TU Sport Day 2026
       </footer>
     </div>
   )
