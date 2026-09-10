@@ -1,5 +1,5 @@
 import type { NumberDrawState, StoreShape } from '../types'
-import { sanitizeStoreShape, sanitizeNumberDrawState } from './storage'
+import { sanitizeStoreShape, sanitizeNumberDrawState, markBackupTaken } from './storage'
 
 const BACKUP_FORMAT = 'tu-sportday-backup'
 const BACKUP_VERSION = 3 // ตรงกับเลขเวอร์ชันโครงสร้างข้อมูลใน storage.ts (v3) — เพิ่ม numberDraw เข้ามาในไฟล์สำรอง
@@ -35,6 +35,7 @@ export function downloadBackupFile(store: StoreShape, numberDraw: NumberDrawStat
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+  markBackupTaken()
 }
 
 export interface RestoreResult {

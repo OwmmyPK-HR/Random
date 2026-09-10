@@ -3,7 +3,16 @@ import type { ColorName, EventState, MatchOutcome, NumberDrawState, RosterEntry,
 import { getEventByCode } from '../data/events'
 import { drawColorNumbers as randomColorNumbers, drawRoundRobin, drawUnitBracketBySai, groupRosterByColor } from '../utils/shuffle'
 import { matchKey } from '../utils/standings'
-import { loadStore, saveStore, clearStore, loadNumberDraw, saveNumberDraw, clearNumberDraw } from '../utils/storage'
+import {
+  loadStore,
+  saveStore,
+  clearStore,
+  loadNumberDraw,
+  saveNumberDraw,
+  clearNumberDraw,
+  STORE_KEY,
+  NUMBER_DRAW_KEY,
+} from '../utils/storage'
 
 interface Ctx {
   store: StoreShape
@@ -38,6 +47,17 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveNumberDraw(numberDraw)
   }, [numberDraw])
+
+  // ซิงก์ข้อมูลข้ามแท็บ/หน้าต่างในเครื่องเดียวกัน — ถ้าอีกแท็บแก้ไขข้อมูลแล้วบันทึกลง localStorage
+  // แท็บนี้จะโหลดค่าล่าสุดมาอัปเดตทันที กันข้อมูลสองแท็บหลุดไม่ตรงกันจนอาจเขียนทับกันเองโดยไม่รู้ตัว
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORE_KEY) setStore(loadStore())
+      else if (e.key === NUMBER_DRAW_KEY) setNumberDraw(loadNumberDraw())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const getEvent = useCallback((code: string) => store[code] ?? EMPTY, [store])
 

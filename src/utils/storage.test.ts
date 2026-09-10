@@ -1,5 +1,21 @@
-import { describe, expect, it } from 'vitest'
-import { sanitizeNumberDrawState, sanitizeStoreShape } from './storage'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { getLastBackupAt, markBackupTaken, sanitizeNumberDrawState, sanitizeStoreShape } from './storage'
+
+/** จำลอง localStorage แบบง่าย ๆ ในหน่วยความจำ — สภาพแวดล้อมทดสอบเป็น Node ล้วน ไม่มี localStorage จริงให้ใช้ */
+function installFakeLocalStorage() {
+  const data = new Map<string, string>()
+  const fake: Storage = {
+    getItem: (k) => data.get(k) ?? null,
+    setItem: (k, v) => void data.set(k, String(v)),
+    removeItem: (k) => void data.delete(k),
+    clear: () => data.clear(),
+    key: (i) => Array.from(data.keys())[i] ?? null,
+    get length() {
+      return data.size
+    },
+  }
+  ;(globalThis as unknown as { localStorage: Storage }).localStorage = fake
+}
 
 describe('sanitizeStoreShape', () => {
   it('passes through a well-formed store unchanged', () => {
@@ -102,5 +118,28 @@ describe('sanitizeNumberDrawState', () => {
 
     expect(sanitizeNumberDrawState(null)).toEqual({})
     expect(sanitizeNumberDrawState('not an object')).toEqual({})
+  })
+})
+
+describe('backup reminder tracking', () => {
+  const originalLocalStorage = (globalThis as unknown as { localStorage?: Storage }).localStorage
+
+  beforeEach(() => {
+    installFakeLocalStorage()
+  })
+
+  afterEach(() => {
+    ;(globalThis as unknown as { localStorage?: Storage }).localStorage = originalLocalStorage
+  })
+
+  it('returns null before any backup has ever been taken', () => {
+    expect(getLastBackupAt()).toBeNull()
+  })
+
+  it('records a timestamp when a backup is taken, retrievable afterwards', () => {
+    markBackupTaken()
+    const at = getLastBackupAt()
+    expect(at).not.toBeNull()
+    expect(Number.isNaN(new Date(at!).getTime())).toBe(false)
   })
 })

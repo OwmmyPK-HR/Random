@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { COLORS, COLOR_THEME, type ColorName } from '../types'
+import { usePrefersReducedMotion } from '../utils/useReducedMotion'
 import { DiceIcon } from './Icons'
 
 const CYCLE_DURATION_MS = 1500
@@ -20,24 +21,40 @@ export function NumberDrawAnimation({
   finalAssignment: Record<ColorName, number>
   onDone: () => void
 }) {
+  const reducedMotion = usePrefersReducedMotion()
   const [display, setDisplay] = useState<Record<ColorName, number>>(() => randomDisplay())
   const [settled, setSettled] = useState(false)
   const finalRef = useRef(finalAssignment)
   finalRef.current = finalAssignment
 
   useEffect(() => {
-    let elapsed = 0
-    let delay = 70
     let cancelled = false
     let timeoutId: number
+
+    const settle = () => {
+      if (cancelled) return
+      setDisplay(finalRef.current)
+      setSettled(true)
+      window.setTimeout(onDone, SETTLE_HOLD_MS)
+    }
+
+    // ผู้ใช้ตั้งค่าระบบไว้ว่าอยากลดการเคลื่อนไหว — ข้ามการสุ่มหมุนเร็ว ๆ ไปเผยผลตรง ๆ เลย
+    if (reducedMotion) {
+      timeoutId = window.setTimeout(settle, SETTLE_HOLD_MS)
+      return () => {
+        cancelled = true
+        window.clearTimeout(timeoutId)
+      }
+    }
+
+    let elapsed = 0
+    let delay = 70
 
     const step = () => {
       if (cancelled) return
       elapsed += delay
       if (elapsed >= CYCLE_DURATION_MS) {
-        setDisplay(finalRef.current)
-        setSettled(true)
-        window.setTimeout(onDone, SETTLE_HOLD_MS)
+        settle()
         return
       }
       setDisplay(randomDisplay())
@@ -51,12 +68,12 @@ export function NumberDrawAnimation({
       window.clearTimeout(timeoutId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reducedMotion])
 
   return (
     <section className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-accent/30 bg-accent/5 px-6 py-12">
       <span className="eyebrow inline-flex items-center gap-1.5 bg-accent px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-accent-contrast">
-        <DiceIcon size={12} className={settled ? '' : 'animate-tumble'} />
+        <DiceIcon size={12} className={settled || reducedMotion ? '' : 'animate-tumble'} />
         {settled ? 'จับฉลากเบอร์เรียบร้อย!' : 'กำลังจับฉลากเบอร์...'}
       </span>
 
@@ -67,7 +84,7 @@ export function NumberDrawAnimation({
             <div
               key={c}
               className={`flex flex-col items-center gap-1.5 rounded-xl px-3 py-4 text-white transition-all ${
-                settled ? 'animate-popIn' : 'animate-pulseGlow'
+                settled || reducedMotion ? 'animate-popIn' : 'animate-pulseGlow'
               }`}
               style={{
                 background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})`,

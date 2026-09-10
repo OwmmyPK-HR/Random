@@ -4,9 +4,9 @@ import { EVENTS, SPORT_GROUPS } from '../data/events'
 import { COLORS } from '../types'
 import { useEventStore } from '../store/EventStoreContext'
 import { useToast } from '../store/ToastContext'
-import { downloadAllTemplates, exportAllResults, parseWorkbookFile } from '../utils/excel'
 import { eventsWithDataCount, randomizedCount, totalHeadcount } from '../utils/stats'
 import { groupRosterByColor } from '../utils/shuffle'
+import { getLastBackupAt } from '../utils/storage'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import { TeamColorCards } from '../components/TeamColorCards'
 import { ShowcasePanel } from '../components/ShowcasePanel'
@@ -17,6 +17,7 @@ import {
   ChevronRightIcon,
   DiceIcon,
   DownloadIcon,
+  InfoIcon,
   TrashIcon,
   TrophyIcon,
   UploadIcon,
@@ -50,6 +51,7 @@ export function HomePage() {
   const withData = eventsWithDataCount(store)
   const randomized = randomizedCount(store)
   const heads = totalHeadcount(store)
+  const neverBackedUp = withData > 0 && !getLastBackupAt()
 
   const colorCounts = Object.fromEntries(
     COLORS.map((c) => [c, EVENTS.reduce((sum, ev) => sum + groupRosterByColor(store[ev.code]?.roster ?? [])[c].length, 0)]),
@@ -57,6 +59,7 @@ export function HomePage() {
 
   const handleBulkFile = async (file: File) => {
     try {
+      const { parseWorkbookFile } = await import('../utils/excel')
       const { parsed, unmatchedSheets } = await parseWorkbookFile(file)
       const codes = Object.keys(parsed)
       if (codes.length === 0) {
@@ -89,7 +92,10 @@ export function HomePage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             <button
-              onClick={() => downloadAllTemplates(store)}
+              onClick={async () => {
+                const { downloadAllTemplates } = await import('../utils/excel')
+                downloadAllTemplates(store)
+              }}
               className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-contrast shadow-glowAccent transition hover:-translate-y-0.5 hover:bg-accent-soft"
             >
               <DownloadIcon size={16} /> ดาวน์โหลดฟอร์ม Excel
@@ -136,6 +142,20 @@ export function HomePage() {
 
         <ShowcasePanel />
       </section>
+
+      {/* BACKUP REMINDER */}
+      {neverBackedUp && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-gold-500/30 bg-gold-400/10 px-4 py-3 text-sm text-mist-300">
+          <InfoIcon size={17} className="shrink-0 text-gold-600" />
+          <p className="flex-1">
+            มีข้อมูลนักกีฬา/ผลจับสลากแล้ว แต่ยังไม่เคย <strong className="font-bold text-mist-100">สำรองข้อมูล</strong> ไว้เลย —
+            ถ้าเบราว์เซอร์นี้ล้างข้อมูลหรือเปลี่ยนเครื่อง ข้อมูลทั้งหมดจะหายไป
+          </p>
+          <Link to="/summary" className="shrink-0 rounded-lg bg-gold-400/20 px-3 py-1.5 text-xs font-bold text-gold-600 hover:bg-gold-400/30">
+            ไปสำรองข้อมูลตอนนี้
+          </Link>
+        </div>
+      )}
 
       {/* TEAM COLOR CARDS */}
       <TeamColorCards />
@@ -226,7 +246,13 @@ export function HomePage() {
           ))}
         </div>
         <div className="mt-4">
-          <button onClick={() => exportAllResults(store)} className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline">
+          <button
+            onClick={async () => {
+              const { exportAllResults } = await import('../utils/excel')
+              exportAllResults(store)
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+          >
             <DownloadIcon size={14} /> ส่งออกสรุปผลทั้งหมดตอนนี้
           </button>
         </div>

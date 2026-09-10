@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { COLORS, COLOR_THEME, type ColorName, type CompetitionMode, type RosterEntry } from '../types'
 import { entryLabel } from '../utils/shuffle'
+import { usePrefersReducedMotion } from '../utils/useReducedMotion'
 import { DiceIcon } from './Icons'
 
 interface SlotValue {
@@ -49,28 +50,44 @@ export function DrawAnimation({
   finalSlots?: FinalSlots
   onDone: () => void
 }) {
+  const reducedMotion = usePrefersReducedMotion()
   const [slots, setSlots] = useState<[SlotValue, SlotValue]>(() => randomSlots(mode, roster))
   const [settled, setSettled] = useState(false)
   const finalRef = useRef(finalSlots)
   finalRef.current = finalSlots
 
   useEffect(() => {
-    let elapsed = 0
-    let delay = 60
     let cancelled = false
     let timeoutId: number
+
+    const settle = () => {
+      if (cancelled) return
+      const target = finalRef.current
+      setSlots([
+        target?.a ?? randomSlots(mode, roster)[0],
+        target?.b ?? { label: 'บาย · ผ่านเข้ารอบถัดไป', color: target?.a.color ?? 'ฟ้า' },
+      ])
+      setSettled(true)
+      window.setTimeout(onDone, SETTLE_HOLD_MS)
+    }
+
+    // ผู้ใช้ตั้งค่าระบบไว้ว่าอยากลดการเคลื่อนไหว — ข้ามการสุ่มหมุนเร็ว ๆ ไปเผยผลตรง ๆ เลย
+    if (reducedMotion) {
+      timeoutId = window.setTimeout(settle, SETTLE_HOLD_MS)
+      return () => {
+        cancelled = true
+        window.clearTimeout(timeoutId)
+      }
+    }
+
+    let elapsed = 0
+    let delay = 60
 
     const step = () => {
       if (cancelled) return
       elapsed += delay
       if (elapsed >= CYCLE_DURATION_MS) {
-        const target = finalRef.current
-        setSlots([
-          target?.a ?? randomSlots(mode, roster)[0],
-          target?.b ?? { label: 'บาย · ผ่านเข้ารอบถัดไป', color: target?.a.color ?? 'ฟ้า' },
-        ])
-        setSettled(true)
-        window.setTimeout(onDone, SETTLE_HOLD_MS)
+        settle()
         return
       }
       setSlots(randomSlots(mode, roster))
@@ -84,23 +101,23 @@ export function DrawAnimation({
       window.clearTimeout(timeoutId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reducedMotion])
 
   const isBye = settled && !finalRef.current?.b
 
   return (
     <section className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-accent/30 bg-accent/5 px-6 py-12">
       <span className="eyebrow inline-flex items-center gap-1.5 bg-accent px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-accent-contrast">
-        <DiceIcon size={12} className={settled ? '' : 'animate-tumble'} />
+        <DiceIcon size={12} className={settled || reducedMotion ? '' : 'animate-tumble'} />
         {settled ? 'ได้คู่แข่งขันแล้ว!' : 'กำลังสุ่มจับคู่แข่งขัน...'}
       </span>
 
       <div className="flex w-full max-w-lg items-stretch gap-3">
-        <Slot value={slots[0]} cycling={!settled} />
+        <Slot value={slots[0]} cycling={!settled && !reducedMotion} />
         <span className={`flex shrink-0 items-center text-base font-extrabold text-mist-500 ${settled ? 'animate-popIn' : ''}`}>
           VS
         </span>
-        <Slot value={slots[1]} cycling={!settled} dim={isBye} />
+        <Slot value={slots[1]} cycling={!settled && !reducedMotion} dim={isBye} />
       </div>
     </section>
   )

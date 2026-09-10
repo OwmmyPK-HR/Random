@@ -10,7 +10,8 @@ import {
 
 // เพิ่มเลขเวอร์ชันทุกครั้งที่โครงสร้างข้อมูลเปลี่ยนแบบไม่เข้ากันย้อนหลัง (เช่นเปลี่ยนรูปแบบ colorBracket/unitBracket)
 // เพื่อไม่ให้ข้อมูลเก่าที่ค้างอยู่ในเบราว์เซอร์ทำให้แอปพังตอนโหลด
-const KEY = 'tu-sportday-random-v3'
+export const STORE_KEY = 'tu-sportday-random-v3'
+const KEY = STORE_KEY
 
 function isColorName(v: unknown): v is ColorName {
   return typeof v === 'string' && (COLORS as readonly string[]).includes(v)
@@ -118,7 +119,7 @@ export function clearStore() {
 }
 
 // ----- จับฉลากเบอร์ประจำสี — สถานะแยกต่างหาก ไม่ผูกกับ store รายประเภทกีฬาด้านบน (คนละ key ใน localStorage) -----
-const NUMBER_DRAW_KEY = 'tu-sportday-numberdraw-v1'
+export const NUMBER_DRAW_KEY = 'tu-sportday-numberdraw-v1'
 
 /** ต้องเป็นเบอร์ 1-4 ครบทุกสี ไม่ซ้ำกันเลย (การเรียงสับเปลี่ยนของ 1-4 เท่านั้น) — กันข้อมูลเพี้ยนจากไฟล์ที่แก้เอง */
 function isValidNumberAssignment(v: unknown): v is Record<ColorName, number> {
@@ -163,5 +164,26 @@ export function clearNumberDraw() {
     localStorage.removeItem(NUMBER_DRAW_KEY)
   } catch {
     // ignore
+  }
+}
+
+// ----- เวลาที่สำรองข้อมูลล่าสุด — ใช้เตือนถ้ามีข้อมูลแล้วแต่ยังไม่เคยกด "สำรองข้อมูล (JSON)" เลย -----
+const LAST_BACKUP_KEY = 'tu-sportday-lastbackup-v1'
+
+/** บันทึกเวลาปัจจุบันเป็น "สำรองข้อมูลล่าสุด" — เรียกทุกครั้งที่ผู้ใช้กดดาวน์โหลดไฟล์สำรองสำเร็จ */
+export function markBackupTaken() {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString())
+  } catch {
+    // ignore
+  }
+}
+
+/** เวลาที่สำรองข้อมูลล่าสุด (ISO string) หรือ null ถ้ายังไม่เคยสำรองเลยบนเครื่อง/เบราว์เซอร์นี้ */
+export function getLastBackupAt(): string | null {
+  try {
+    return localStorage.getItem(LAST_BACKUP_KEY)
+  } catch {
+    return null
   }
 }

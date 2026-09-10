@@ -23,7 +23,16 @@ export function UploadBox({ onFile, label }: { onFile: (file: File) => void; lab
         handleFiles(e.dataTransfer.files)
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all ${
+      role="button"
+      tabIndex={0}
+      aria-label={label ?? 'ลากไฟล์ Excel มาวาง หรือกด Enter เพื่อเลือกไฟล์'}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          inputRef.current?.click()
+        }
+      }}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
         dragOver ? 'scale-[1.01] border-accent bg-accent/5' : 'border-surface-borderLight bg-surface-sunken hover:border-mist-600'
       }`}
     >

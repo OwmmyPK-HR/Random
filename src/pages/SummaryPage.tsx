@@ -4,7 +4,6 @@ import { EVENTS, SPORT_GROUPS } from '../data/events'
 import { COLORS, COLOR_THEME } from '../types'
 import { useEventStore } from '../store/EventStoreContext'
 import { useToast } from '../store/ToastContext'
-import { exportAllResults } from '../utils/excel'
 import { downloadBackupFile, readBackupFile, type RestoreResult } from '../utils/backup'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
@@ -53,7 +52,10 @@ export function SummaryPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => exportAllResults(store)}
+            onClick={async () => {
+              const { exportAllResults } = await import('../utils/excel')
+              exportAllResults(store)
+            }}
             className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-contrast shadow-glowAccent transition hover:-translate-y-0.5 hover:bg-accent-soft"
           >
             <DownloadIcon size={16} /> ส่งออกสรุปผลทั้งหมด (Excel)

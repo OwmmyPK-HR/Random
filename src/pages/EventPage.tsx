@@ -9,7 +9,6 @@ import { ResultBoard } from '../components/ResultBoard'
 import { ColorBracketView, UnitBracketView } from '../components/BracketView'
 import { ColorDot } from '../components/ColorBadge'
 import { DrawAnimation } from '../components/DrawAnimation'
-import { downloadSingleTemplate, exportEventResult, parseWorkbookFileForEvent } from '../utils/excel'
 import { entryLabel, groupRosterByColor } from '../utils/shuffle'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
 import {
@@ -131,6 +130,7 @@ export function EventPage() {
 
   const handleFile = async (file: File) => {
     try {
+      const { parseWorkbookFileForEvent } = await import('../utils/excel')
       const rows = await parseWorkbookFileForEvent(file, ev)
       if (rows.length === 0) {
         notify('ไม่พบรายชื่อในไฟล์นี้ กรุณาตรวจสอบว่ากรอกข้อมูลในคอลัมน์สีที่ถูกต้อง', 'error')
@@ -172,7 +172,10 @@ export function EventPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => downloadSingleTemplate(ev, state.roster)}
+            onClick={async () => {
+              const { downloadSingleTemplate } = await import('../utils/excel')
+              downloadSingleTemplate(ev, state.roster)
+            }}
             className="inline-flex items-center gap-1.5 rounded-lg border border-surface-borderLight px-3 py-1.5 text-xs font-semibold text-mist-300 hover:bg-surface-raised"
           >
             <DownloadIcon size={13} /> ดาวน์โหลดฟอร์ม
@@ -273,7 +276,10 @@ export function EventPage() {
       <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
         {hasBracket && !isDrawing && (
           <button
-            onClick={() => exportEventResult(ev, state)}
+            onClick={async () => {
+              const { exportEventResult } = await import('../utils/excel')
+              exportEventResult(ev, state)
+            }}
             className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
           >
             <DownloadIcon size={15} /> ส่งออกผลเป็น Excel
