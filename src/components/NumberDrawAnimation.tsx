@@ -1,27 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { COLORS, type ColorName } from '../types'
 import { usePrefersReducedMotion } from '../utils/useReducedMotion'
 import { RollingDie3D } from './RollingDie3D'
 import { DiceIcon } from './Icons'
 
-const CYCLE_DURATION_MS = 4500
+const CYCLE_DURATION_MS = 8200
 const SETTLE_HOLD_MS = 650
-const SPIN_TICK_MS = 90
 // เวลาที่แต่ละสีจะ "หยุด" ตามลำดับ (สัดส่วนของ CYCLE_DURATION_MS) — ทยอยหยุดทีละสีให้ลุ้นขึ้นเรื่อย ๆ แทนที่จะหยุดพร้อมกันหมดทีเดียว
 const SETTLE_FRACTIONS = [0.42, 0.62, 0.8, 1]
 
-function randomNumber(): number {
-  return 1 + Math.floor(Math.random() * 4)
-}
-
-function randomDisplay(): Record<ColorName, number> {
-  return Object.fromEntries(COLORS.map((c) => [c, randomNumber()])) as Record<ColorName, number>
-}
-
 /**
  * แอนิเมชันจับฉลากเบอร์ สไตล์ทอยลูกเต๋า D&D — ลูกเต๋า 3 มิติจริง (กล่อง 6 หน้าหมุนในพื้นที่ 3 มิติ ไม่ใช่ไอคอนแบนที่แค่บิดมุมมอง)
- * ของทั้ง 4 สีทอยหมุนพร้อมกัน แล้วทยอยหยุดนิ่งทีละสีเรียงตามลำดับ บนพื้นหลังวงเวทมนตร์สไตล์ห้องใต้ดิน
- * (ตั้งใจให้มืดเสมอ ไม่ขึ้นกับโหมดมืด/ขาว เหมือนแผงโปสเตอร์หน้าแรก — เพื่ออารมณ์ทอยเต๋าที่ตัดกับพื้นหลังปกติของหน้า)
+ * ของทั้ง 4 สีทอยหมุนพร้อมกัน (ไม่โชว์เลขระหว่างหมุน — ดูไม่ออกว่าจะได้เบอร์อะไรจนกว่าจะหยุดนิ่ง) แล้วทยอยหยุดนิ่งทีละสีเรียงตามลำดับ
+ * บนพื้นหลังวงเวทมนตร์สไตล์ห้องใต้ดิน (ตั้งใจให้มืดเสมอ ไม่ขึ้นกับโหมดมืด/ขาว เหมือนแผงโปสเตอร์หน้าแรก — เพื่ออารมณ์ทอยเต๋าที่ตัดกับพื้นหลังปกติของหน้า)
  * (ผลจริงคำนวณไว้ล่วงหน้าแล้วก่อนเรียกคอมโพเนนต์นี้ — แอนิเมชันแค่สร้างความตื่นเต้นก่อนเผยผล)
  */
 export function NumberDrawAnimation({
@@ -32,23 +23,17 @@ export function NumberDrawAnimation({
   onDone: () => void
 }) {
   const reducedMotion = usePrefersReducedMotion()
-  const [display, setDisplay] = useState<Record<ColorName, number>>(() => randomDisplay())
   const [settledCount, setSettledCount] = useState(0)
-  const finalRef = useRef(finalAssignment)
-  finalRef.current = finalAssignment
 
   const allSettled = settledCount >= COLORS.length
 
   useEffect(() => {
     let cancelled = false
     const timeoutIds: number[] = []
-    let spinId: number | undefined
-    const settledSoFar = { current: 0 }
 
     if (reducedMotion) {
       const t = window.setTimeout(() => {
         if (cancelled) return
-        setDisplay(finalRef.current)
         setSettledCount(COLORS.length)
         window.setTimeout(onDone, SETTLE_HOLD_MS)
       }, SETTLE_HOLD_MS)
@@ -58,27 +43,12 @@ export function NumberDrawAnimation({
       }
     }
 
-    // หมุนตัวเลขสุ่มของสีที่ยังไม่หยุดไปเรื่อย ๆ
-    spinId = window.setInterval(() => {
-      if (cancelled) return
-      setDisplay((prev) => {
-        const next = { ...prev }
-        for (let i = settledSoFar.current; i < COLORS.length; i++) next[COLORS[i]] = randomNumber()
-        return next
-      })
-    }, SPIN_TICK_MS)
-
-    COLORS.forEach((color, i) => {
+    COLORS.forEach((_, i) => {
       const id = window.setTimeout(
         () => {
           if (cancelled) return
-          settledSoFar.current = i + 1
-          setDisplay((prev) => ({ ...prev, [color]: finalRef.current[color] }))
           setSettledCount(i + 1)
-          if (i === COLORS.length - 1) {
-            window.clearInterval(spinId)
-            window.setTimeout(onDone, SETTLE_HOLD_MS)
-          }
+          if (i === COLORS.length - 1) window.setTimeout(onDone, SETTLE_HOLD_MS)
         },
         CYCLE_DURATION_MS * SETTLE_FRACTIONS[i],
       )
@@ -87,7 +57,6 @@ export function NumberDrawAnimation({
 
     return () => {
       cancelled = true
-      window.clearInterval(spinId)
       timeoutIds.forEach((id) => window.clearTimeout(id))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,7 +86,7 @@ export function NumberDrawAnimation({
               <span className="text-xs font-bold text-white/70">สี{c}</span>
               <RollingDie3D
                 color={c}
-                value={display[c]}
+                value={finalAssignment[c]}
                 spinning={!isSettled}
                 justSettled={isSettled}
                 reducedMotion={reducedMotion}

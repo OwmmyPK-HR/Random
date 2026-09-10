@@ -90,7 +90,10 @@ export function RollingDie3D({
             (ถ้าประกาศไว้ใน JSX ด้วย จะโดน React เซ็ตทับค่าที่ตั้งด้วยมือทุกครั้งที่ re-render จากเลขที่วิ่งเปลี่ยนหน้าเต๋า) */}
         <div ref={cubeRef} style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d' }}>
           <div style={{ ...faceBase, transform: `translateZ(${HALF}px)` }}>
-            <span className="text-xl font-extrabold text-white [font-variant-numeric:tabular-nums] drop-shadow">{value}</span>
+            {/* ไม่โชว์เลขระหว่างหมุน (สมจริงกว่า — ลูกเต๋าจริงก็อ่านเลขตอนกำลังทอยไม่ได้) เผยเลขให้เห็นตอนหยุดนิ่งแล้วเท่านั้น */}
+            {!spinning && (
+              <span className="text-xl font-extrabold text-white [font-variant-numeric:tabular-nums] drop-shadow">{value}</span>
+            )}
           </div>
           <div style={{ ...faceBase, transform: `rotateY(180deg) translateZ(${HALF}px)` }} />
           <div style={{ ...faceBase, transform: `rotateY(90deg) translateZ(${HALF}px)` }} />
