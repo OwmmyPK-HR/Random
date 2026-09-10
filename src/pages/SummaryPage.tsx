@@ -12,7 +12,7 @@ import { groupRosterByColor } from '../utils/shuffle'
 import { CheckCircleIcon, ClockIcon, DownloadIcon, SearchIcon, TrashIcon, UploadIcon } from '../components/Icons'
 
 export function SummaryPage() {
-  const { store, resetAll, replaceStore } = useEventStore()
+  const { store, resetAll, replaceStore, numberDraw, replaceNumberDraw } = useEventStore()
   const { notify } = useToast()
   const [confirmReset, setConfirmReset] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<RestoreResult | null>(null)
@@ -71,12 +71,12 @@ export function SummaryPage() {
         <div>
           <p className="text-sm font-bold text-mist-100">สำรอง / กู้คืนข้อมูล</p>
           <p className="text-xs text-mist-500">
-            ไฟล์นี้เก็บครบทั้งรายชื่อ ผลจับสลาก และผลแข่งขัน (ต่างจากไฟล์ Excel ที่มีแค่รายชื่อ) ใช้ย้ายข้อมูลไปเครื่องอื่น หรือกันไว้เผื่อเบราว์เซอร์ล้างข้อมูล
+            ไฟล์นี้เก็บครบทั้งรายชื่อ ผลจับสลาก ผลแข่งขัน และผลจับฉลากเบอร์ประจำสี (ต่างจากไฟล์ Excel ที่มีแค่รายชื่อ) ใช้ย้ายข้อมูลไปเครื่องอื่น หรือกันไว้เผื่อเบราว์เซอร์ล้างข้อมูล
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => downloadBackupFile(store)}
+            onClick={() => downloadBackupFile(store, numberDraw)}
             className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-sunken px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
           >
             <DownloadIcon size={14} /> สำรองข้อมูล (JSON)
@@ -194,7 +194,7 @@ export function SummaryPage() {
       <ConfirmDialog
         open={confirmReset}
         title="ล้างข้อมูลทั้งหมด?"
-        message="รายชื่อนักกีฬาและผลการสุ่มของทุกประเภทกีฬาจะถูกลบทั้งหมดออกจากเครื่องนี้ การกระทำนี้ย้อนกลับไม่ได้"
+        message="รายชื่อนักกีฬา ผลการสุ่มของทุกประเภทกีฬา และผลจับฉลากเบอร์ประจำสี จะถูกลบทั้งหมดออกจากเครื่องนี้ การกระทำนี้ย้อนกลับไม่ได้"
         confirmLabel="ล้างข้อมูลทั้งหมด"
         danger
         onCancel={() => setConfirmReset(false)}
@@ -214,6 +214,7 @@ export function SummaryPage() {
         onConfirm={() => {
           if (pendingRestore) {
             replaceStore(pendingRestore.store)
+            replaceNumberDraw(pendingRestore.numberDraw)
             notify(`กู้คืนข้อมูลสำเร็จ ${pendingRestore.eventCount} ประเภทกีฬา`, 'success')
           }
           setPendingRestore(null)

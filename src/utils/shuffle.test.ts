@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COLORS, type ColorName, type ResultMap, type RosterEntry } from '../types'
-import { drawRoundRobin, drawUnitBracketBySai, entryLabel, groupRosterByColor } from './shuffle'
+import { drawColorNumbers, drawRoundRobin, drawUnitBracketBySai, entryLabel, groupRosterByColor } from './shuffle'
 
 function entry(color: ColorName, name1: string): RosterEntry {
   return { id: `${color}-${name1}`, color, name1 }
@@ -95,6 +95,23 @@ describe('drawUnitBracketBySai', () => {
       { sai: 'A', pairs: [] },
       { sai: 'B', pairs: [] },
     ])
+  })
+})
+
+describe('drawColorNumbers', () => {
+  it('gives every color a distinct number from 1-4', () => {
+    const assignment = drawColorNumbers()
+    expect(Object.keys(assignment).sort()).toEqual([...COLORS].sort())
+    expect(Object.values(assignment).sort()).toEqual([1, 2, 3, 4])
+  })
+
+  it('randomizes the assignment across calls (not always the same mapping)', () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 20; i++) {
+      const assignment = drawColorNumbers()
+      seen.add(COLORS.map((c) => assignment[c]).join(''))
+    }
+    expect(seen.size).toBeGreaterThan(1)
   })
 })
 

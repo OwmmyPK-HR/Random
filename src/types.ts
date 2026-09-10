@@ -73,3 +73,9 @@ export interface EventState {
 }
 
 export type StoreShape = Record<string, EventState>
+
+// ----- จับฉลากเบอร์ประจำสี (1-4) — ใช้สำหรับลำดับเดินขบวน/พิธีเปิด ฯลฯ ไม่ผูกกับประเภทกีฬาใดโดยเฉพาะ -----
+export interface NumberDrawState {
+  assignment?: Record<ColorName, number> // แต่ละสีได้เบอร์อะไร (1-4 ไม่ซ้ำกัน)
+  drawnAt?: string
+}

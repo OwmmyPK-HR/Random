@@ -1,9 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { ColorName, EventState, MatchOutcome, RosterEntry, StoreShape } from '../types'
+import type { ColorName, EventState, MatchOutcome, NumberDrawState, RosterEntry, StoreShape } from '../types'
 import { getEventByCode } from '../data/events'
-import { drawRoundRobin, drawUnitBracketBySai, groupRosterByColor } from '../utils/shuffle'
+import { drawColorNumbers as randomColorNumbers, drawRoundRobin, drawUnitBracketBySai, groupRosterByColor } from '../utils/shuffle'
 import { matchKey } from '../utils/standings'
-import { loadStore, saveStore, clearStore } from '../utils/storage'
+import { loadStore, saveStore, clearStore, loadNumberDraw, saveNumberDraw, clearNumberDraw } from '../utils/storage'
 
 interface Ctx {
   store: StoreShape
@@ -17,6 +17,10 @@ interface Ctx {
   resetEvent: (code: string) => void
   resetAll: () => void
   replaceStore: (next: StoreShape) => void
+  numberDraw: NumberDrawState
+  drawColorNumbers: () => void
+  resetNumberDraw: () => void
+  replaceNumberDraw: (next: NumberDrawState) => void
 }
 
 const EMPTY: EventState = { roster: [] }
@@ -25,10 +29,15 @@ const EventStoreCtx = createContext<Ctx | null>(null)
 
 export function EventStoreProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<StoreShape>(() => loadStore())
+  const [numberDraw, setNumberDraw] = useState<NumberDrawState>(() => loadNumberDraw())
 
   useEffect(() => {
     saveStore(store)
   }, [store])
+
+  useEffect(() => {
+    saveNumberDraw(numberDraw)
+  }, [numberDraw])
 
   const getEvent = useCallback((code: string) => store[code] ?? EMPTY, [store])
 
@@ -119,12 +128,29 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
 
   const resetAll = useCallback(() => {
     clearStore()
+    clearNumberDraw()
     setStore({})
+    setNumberDraw({})
   }, [])
 
   /** แทนที่ข้อมูลทั้งหมดในระบบด้วยไฟล์สำรองที่นำเข้ามา (ใช้กับฟีเจอร์กู้คืนข้อมูลสำรอง) */
   const replaceStore = useCallback((next: StoreShape) => {
     setStore(next)
+  }, [])
+
+  /** จับฉลากเบอร์ 1-4 ให้แต่ละสีใหม่ (แทนที่ผลเดิมทั้งหมด) */
+  const drawColorNumbers = useCallback(() => {
+    setNumberDraw({ assignment: randomColorNumbers(), drawnAt: new Date().toISOString() })
+  }, [])
+
+  const resetNumberDraw = useCallback(() => {
+    clearNumberDraw()
+    setNumberDraw({})
+  }, [])
+
+  /** แทนที่ผลจับฉลากเบอร์ด้วยไฟล์สำรองที่นำเข้ามา (ใช้กับฟีเจอร์กู้คืนข้อมูลสำรอง) */
+  const replaceNumberDraw = useCallback((next: NumberDrawState) => {
+    setNumberDraw(next)
   }, [])
 
   const value = useMemo<Ctx>(
@@ -140,6 +166,10 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       resetEvent,
       resetAll,
       replaceStore,
+      numberDraw,
+      drawColorNumbers,
+      resetNumberDraw,
+      replaceNumberDraw,
     }),
     [
       store,
@@ -153,6 +183,10 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
       resetEvent,
       resetAll,
       replaceStore,
+      numberDraw,
+      drawColorNumbers,
+      resetNumberDraw,
+      replaceNumberDraw,
     ],
   )
 

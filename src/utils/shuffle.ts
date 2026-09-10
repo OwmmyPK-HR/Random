@@ -10,6 +10,12 @@ function fisherYates<T>(input: T[]): T[] {
   return arr
 }
 
+/** จับฉลากเบอร์ 1-4 ให้แต่ละสี (คนละเบอร์ ไม่ซ้ำกัน) — ใช้สำหรับลำดับเดินขบวน/พิธีเปิด ฯลฯ ไม่ผูกกับประเภทกีฬาใดโดยเฉพาะ */
+export function drawColorNumbers(): Record<ColorName, number> {
+  const numbers = fisherYates([1, 2, 3, 4])
+  return Object.fromEntries(COLORS.map((c, i) => [c, numbers[i]])) as Record<ColorName, number>
+}
+
 /** จัดกลุ่มรายชื่อ/หน่วยแข่งขันตามสีที่กำหนดไว้แล้ว (ไม่มีการสุ่ม — แค่จัดเรียงตามข้อมูลจริง) */
 export function groupRosterByColor(roster: RosterEntry[]): ResultMap {
   const result: ResultMap = { ฟ้า: [], ม่วง: [], ชมพู: [], เขียว: [] }

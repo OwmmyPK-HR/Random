@@ -15,6 +15,7 @@ import {
   ChartIcon,
   CheckCircleIcon,
   ChevronRightIcon,
+  DiceIcon,
   DownloadIcon,
   SPORT_ICON,
   TrashIcon,
@@ -111,6 +112,12 @@ export function HomePage() {
                 e.target.value = ''
               }}
             />
+            <Link
+              to="/number-draw"
+              className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2.5 text-sm font-bold text-mist-200 transition hover:border-accent/50 hover:text-accent"
+            >
+              <DiceIcon size={16} /> จับฉลากเบอร์ประจำสี
+            </Link>
             <Link
               to="/summary"
               className="inline-flex items-center gap-2 rounded-xl border border-surface-borderLight bg-surface-sunken px-4 py-2.5 text-sm font-bold text-mist-200 transition hover:border-accent/50 hover:text-accent"
@@ -222,7 +229,7 @@ export function HomePage() {
       <ConfirmDialog
         open={confirmReset}
         title="ล้างข้อมูลทั้งหมด?"
-        message="รายชื่อนักกีฬาและผลการจับสลากของทุกประเภทกีฬาจะถูกลบทั้งหมดออกจากเครื่องนี้ การกระทำนี้ย้อนกลับไม่ได้
+        message="รายชื่อนักกีฬา ผลการจับสลากของทุกประเภทกีฬา และผลจับฉลากเบอร์ประจำสี จะถูกลบทั้งหมดออกจากเครื่องนี้ การกระทำนี้ย้อนกลับไม่ได้
 ถ้าต้องการลบแค่บางประเภท เข้าไปที่หน้าประเภทกีฬานั้นแล้วกด “ลบทั้งหมด” แทนได้"
         confirmLabel="ล้างข้อมูลทั้งหมด"
         danger

@@ -4,7 +4,7 @@ import { SPORT_GROUPS } from '../data/events'
 import { COLORS } from '../types'
 import { useTheme } from '../store/ThemeContext'
 import { ColorDot } from './ColorBadge'
-import { ChartIcon, CloseIcon, HomeIcon, MenuIcon, MoonIcon, SPORT_ICON, SunIcon } from './Icons'
+import { ChartIcon, CloseIcon, DiceIcon, HomeIcon, MenuIcon, MoonIcon, SPORT_ICON, SunIcon } from './Icons'
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -27,6 +27,10 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
       })}
 
       <div className="mt-4 flex flex-col gap-0.5 border-t border-surface-border pt-3">
+        <NavLink to="/number-draw" onClick={onNavigate} className={({ isActive }) => navClass(isActive)}>
+          <DiceIcon size={17} className="shrink-0" />
+          <span>จับฉลากเบอร์ประจำสี</span>
+        </NavLink>
         <NavLink to="/summary" onClick={onNavigate} className={({ isActive }) => navClass(isActive)}>
           <ChartIcon size={17} className="shrink-0" />
           <span>สรุปผล &amp; ส่งออก</span>

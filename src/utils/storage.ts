@@ -1,4 +1,12 @@
-import { COLORS, type ColorName, type EventState, type MatchOutcome, type RosterEntry, type StoreShape } from '../types'
+import {
+  COLORS,
+  type ColorName,
+  type EventState,
+  type MatchOutcome,
+  type NumberDrawState,
+  type RosterEntry,
+  type StoreShape,
+} from '../types'
 
 // เพิ่มเลขเวอร์ชันทุกครั้งที่โครงสร้างข้อมูลเปลี่ยนแบบไม่เข้ากันย้อนหลัง (เช่นเปลี่ยนรูปแบบ colorBracket/unitBracket)
 // เพื่อไม่ให้ข้อมูลเก่าที่ค้างอยู่ในเบราว์เซอร์ทำให้แอปพังตอนโหลด
@@ -104,6 +112,55 @@ export function saveStore(store: StoreShape) {
 export function clearStore() {
   try {
     localStorage.removeItem(KEY)
+  } catch {
+    // ignore
+  }
+}
+
+// ----- จับฉลากเบอร์ประจำสี — สถานะแยกต่างหาก ไม่ผูกกับ store รายประเภทกีฬาด้านบน (คนละ key ใน localStorage) -----
+const NUMBER_DRAW_KEY = 'tu-sportday-numberdraw-v1'
+
+/** ต้องเป็นเบอร์ 1-4 ครบทุกสี ไม่ซ้ำกันเลย (การเรียงสับเปลี่ยนของ 1-4 เท่านั้น) — กันข้อมูลเพี้ยนจากไฟล์ที่แก้เอง */
+function isValidNumberAssignment(v: unknown): v is Record<ColorName, number> {
+  if (!v || typeof v !== 'object') return false
+  const r = v as Record<string, unknown>
+  const numbers = COLORS.map((c) => r[c])
+  if (!numbers.every((n) => typeof n === 'number' && Number.isInteger(n))) return false
+  const sorted = [...(numbers as number[])].sort((a, b) => a - b)
+  return sorted.length === 4 && sorted.every((n, i) => n === i + 1)
+}
+
+/** ตรวจรูปแบบข้อมูลจับฉลากเบอร์ก่อนใช้งาน — ใช้ทั้งตอนโหลดจาก localStorage และตอนนำเข้าไฟล์สำรอง */
+export function sanitizeNumberDrawState(raw: unknown): NumberDrawState {
+  if (!raw || typeof raw !== 'object') return {}
+  const r = raw as Record<string, unknown>
+  return {
+    assignment: isValidNumberAssignment(r.assignment) ? r.assignment : undefined,
+    drawnAt: typeof r.drawnAt === 'string' ? r.drawnAt : undefined,
+  }
+}
+
+export function loadNumberDraw(): NumberDrawState {
+  try {
+    const raw = localStorage.getItem(NUMBER_DRAW_KEY)
+    if (!raw) return {}
+    return sanitizeNumberDrawState(JSON.parse(raw))
+  } catch {
+    return {}
+  }
+}
+
+export function saveNumberDraw(state: NumberDrawState) {
+  try {
+    localStorage.setItem(NUMBER_DRAW_KEY, JSON.stringify(state))
+  } catch {
+    // เก็บข้อมูลไม่สำเร็จ (เช่น พื้นที่เต็ม) — ปล่อยผ่าน
+  }
+}
+
+export function clearNumberDraw() {
+  try {
+    localStorage.removeItem(NUMBER_DRAW_KEY)
   } catch {
     // ignore
   }

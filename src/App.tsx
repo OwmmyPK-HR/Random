@@ -6,6 +6,7 @@ import { ThemeProvider } from './store/ThemeContext'
 import { HomePage } from './pages/HomePage'
 import { SportGroupPage } from './pages/SportGroupPage'
 import { EventPage } from './pages/EventPage'
+import { NumberDrawPage } from './pages/NumberDrawPage'
 import { SummaryPage } from './pages/SummaryPage'
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/sport/:slug" element={<SportGroupPage />} />
               <Route path="/event/:code" element={<EventPage />} />
+              <Route path="/number-draw" element={<NumberDrawPage />} />
               <Route path="/summary" element={<SummaryPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>

@@ -1,27 +1,29 @@
-import type { StoreShape } from '../types'
-import { sanitizeStoreShape } from './storage'
+import type { NumberDrawState, StoreShape } from '../types'
+import { sanitizeStoreShape, sanitizeNumberDrawState } from './storage'
 
 const BACKUP_FORMAT = 'tu-sportday-backup'
-const BACKUP_VERSION = 2 // ตรงกับเลขเวอร์ชันโครงสร้างข้อมูลใน storage.ts (v2)
+const BACKUP_VERSION = 3 // ตรงกับเลขเวอร์ชันโครงสร้างข้อมูลใน storage.ts (v3) — เพิ่ม numberDraw เข้ามาในไฟล์สำรอง
 
 interface BackupFile {
   format: typeof BACKUP_FORMAT
   version: number
   exportedAt: string
   data: StoreShape
+  numberDraw?: NumberDrawState
 }
 
 /**
- * สำรองข้อมูลทั้งหมด (รายชื่อ + ผลจับสลาก + ผลแข่งขัน) เป็นไฟล์ .json เดียว ดาวน์โหลดเก็บไว้ได้
- * ต่างจากไฟล์ Excel ตรงที่ไฟล์นี้กู้คืนได้ "ครบ" ทั้งผลจับสลากและผลแข่งขัน ไม่ใช่แค่รายชื่อ
+ * สำรองข้อมูลทั้งหมด (รายชื่อ + ผลจับสลาก + ผลแข่งขัน + ผลจับฉลากเบอร์ประจำสี) เป็นไฟล์ .json เดียว ดาวน์โหลดเก็บไว้ได้
+ * ต่างจากไฟล์ Excel ตรงที่ไฟล์นี้กู้คืนได้ "ครบ" ไม่ใช่แค่รายชื่อ
  * ใช้ย้ายข้อมูลข้ามเครื่อง/เบราว์เซอร์ หรือกันเบราว์เซอร์ล้างข้อมูลได้
  */
-export function downloadBackupFile(store: StoreShape) {
+export function downloadBackupFile(store: StoreShape, numberDraw: NumberDrawState) {
   const payload: BackupFile = {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     data: store,
+    numberDraw,
   }
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -37,6 +39,7 @@ export function downloadBackupFile(store: StoreShape) {
 
 export interface RestoreResult {
   store: StoreShape
+  numberDraw: NumberDrawState
   eventCount: number
 }
 
@@ -52,9 +55,10 @@ export async function readBackupFile(file: File): Promise<RestoreResult> {
   const obj = parsed as Partial<BackupFile> | null
   const rawData = obj && typeof obj === 'object' && 'data' in obj ? obj.data : parsed
   const store = sanitizeStoreShape(rawData)
+  const numberDraw = sanitizeNumberDrawState(obj && typeof obj === 'object' ? obj.numberDraw : undefined)
   const eventCount = Object.keys(store).length
-  if (eventCount === 0) {
+  if (eventCount === 0 && !numberDraw.assignment) {
     throw new Error('ไม่พบข้อมูลที่ใช้ได้ในไฟล์นี้ กรุณาใช้ไฟล์สำรองที่ดาวน์โหลดจากระบบนี้เท่านั้น')
   }
-  return { store, eventCount }
+  return { store, numberDraw, eventCount }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sanitizeStoreShape } from './storage'
+import { sanitizeNumberDrawState, sanitizeStoreShape } from './storage'
 
 describe('sanitizeStoreShape', () => {
   it('passes through a well-formed store unchanged', () => {
@@ -79,5 +79,28 @@ describe('sanitizeStoreShape', () => {
     expect(sanitizeStoreShape(null)).toEqual({})
     expect(sanitizeStoreShape('not an object')).toEqual({})
     expect(sanitizeStoreShape({ '2.1': 'also not an object' })).toEqual({})
+  })
+})
+
+describe('sanitizeNumberDrawState', () => {
+  it('passes through a well-formed assignment (a permutation of 1-4) unchanged', () => {
+    const good = { assignment: { ฟ้า: 2, ม่วง: 4, ชมพู: 1, เขียว: 3 }, drawnAt: '2026-01-01T00:00:00.000Z' }
+    expect(sanitizeNumberDrawState(good)).toEqual(good)
+  })
+
+  it('drops an assignment with a duplicate or out-of-range number instead of crashing', () => {
+    const duplicate = { assignment: { ฟ้า: 1, ม่วง: 1, ชมพู: 2, เขียว: 3 } }
+    expect(sanitizeNumberDrawState(duplicate).assignment).toBeUndefined()
+
+    const outOfRange = { assignment: { ฟ้า: 5, ม่วง: 2, ชมพู: 3, เขียว: 4 } }
+    expect(sanitizeNumberDrawState(outOfRange).assignment).toBeUndefined()
+  })
+
+  it('drops an assignment missing a color, and ignores garbage input', () => {
+    const missing = { assignment: { ฟ้า: 1, ม่วง: 2, ชมพู: 3 } }
+    expect(sanitizeNumberDrawState(missing).assignment).toBeUndefined()
+
+    expect(sanitizeNumberDrawState(null)).toEqual({})
+    expect(sanitizeNumberDrawState('not an object')).toEqual({})
   })
 })
