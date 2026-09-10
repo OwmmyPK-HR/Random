@@ -30,6 +30,10 @@ export function useTour(pageKey: string, steps: TourStep[]): TourController {
   const [stepIndex, setStepIndex] = useState(0)
 
   useEffect(() => {
+    // ปุ่ม "?" อยู่ที่แถบบนจุดเดียว ใช้ hook เดียวกันตลอดอายุแอป (ไม่ได้ mount ใหม่ทุกหน้า) — พอเปลี่ยนหน้า
+    // ต้องรีเซ็ตสถานะทัวร์ของหน้าเดิมทิ้งก่อนเสมอ ไม่งั้น stepIndex ที่ค้างไว้จะเพี้ยนไปเทียบกับขั้นตอนของหน้าใหม่
+    setActive(false)
+    setStepIndex(0)
     if (steps.length === 0 || hasSeenTour(pageKey)) return
     const t = window.setTimeout(() => setActive(true), 500)
     return () => window.clearTimeout(t)
@@ -59,17 +63,17 @@ export function useTour(pageKey: string, steps: TourStep[]): TourController {
   return { active, stepIndex, steps, reducedMotion, start, next, skip: stop }
 }
 
-/** ปุ่มวงกลม "?" ไว้เรียกทัวร์ซ้ำเอง — วางไว้ข้างหัวข้อของแต่ละหน้า */
-export function TourButton({ tour }: { tour: TourController }) {
+/** ปุ่มวงกลม "?" ที่แถบบน — เรียกทัวร์สอนใช้งานของหน้าปัจจุบันซ้ำได้ทุกเมื่อ (ไม่โชว์ถ้าหน้านั้นไม่มีทัวร์) */
+export function TourButton({ tour, className = '' }: { tour: TourController; className?: string }) {
   if (tour.steps.length === 0) return null
   return (
     <button
       onClick={tour.start}
-      className="no-print flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-surface-border bg-surface-card text-mist-400 transition-colors hover:border-accent/50 hover:text-accent"
+      className={`no-print flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-surface-border text-mist-300 transition-colors hover:border-accent/50 hover:text-accent-soft ${className}`}
       aria-label="ดูวิธีใช้งานหน้านี้"
       title="วิธีใช้งานหน้านี้"
     >
-      <HelpIcon size={16} />
+      <HelpIcon size={17} />
     </button>
   )
 }

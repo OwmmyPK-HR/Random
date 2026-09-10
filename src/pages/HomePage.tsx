@@ -12,7 +12,6 @@ import { TeamColorCards } from '../components/TeamColorCards'
 import { ShowcasePanel } from '../components/ShowcasePanel'
 import { DiceTeaser } from '../components/DiceTeaser'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { TourButton, TourOverlay, useTour, type TourStep } from '../components/Tour'
 import {
   ChartIcon,
   CheckCircleIcon,
@@ -43,35 +42,11 @@ const STEPS = [
   { title: 'ยืนยันผล', desc: 'ตรวจสอบและส่งออกผลเป็น Excel' },
 ]
 
-const HOME_TOUR_STEPS: TourStep[] = [
-  {
-    target: 'home-excel',
-    title: 'เริ่มต้นที่นี่',
-    body: 'ดาวน์โหลดฟอร์ม Excel ไปกรอกรายชื่อนักกีฬาแยกตามสี แล้วอัปโหลดไฟล์เดิมกลับเข้าระบบ ไม่ต้องพิมพ์ชื่อสีเอง',
-  },
-  {
-    target: 'home-sportgroups',
-    title: 'เลือกประเภทกีฬา',
-    body: 'กดเข้าไปที่ประเภทกีฬาที่ต้องการ จะเห็นรายชื่อที่จัดกลุ่มตามสีให้แล้ว กดปุ่มสุ่มจับคู่แข่งขันได้เลย',
-  },
-  {
-    target: 'home-numberdraw',
-    title: 'จับฉลากเบอร์ประจำสี',
-    body: 'ทอยลูกเต๋าสุ่มเบอร์ 1-4 ให้แต่ละสี ใช้จัดลำดับเดินขบวน/พิธีเปิด แยกต่างหากจากการจับคู่แข่งขัน',
-  },
-  {
-    target: 'home-summary',
-    title: 'สรุปผล & ส่งออก',
-    body: 'ดูภาพรวมทุกประเภทกีฬา ส่งออกผลเป็น Excel และสำรอง/กู้คืนข้อมูลได้ในหน้านี้',
-  },
-]
-
 export function HomePage() {
   const { store, bulkSetRoster, resetAll } = useEventStore()
   const { notify } = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmReset, setConfirmReset] = useState(false)
-  const tour = useTour('home', HOME_TOUR_STEPS)
 
   const totalEvents = EVENTS.length
   const withData = eventsWithDataCount(store)
@@ -108,10 +83,7 @@ export function HomePage() {
       {/* HERO */}
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_1fr]">
         <div className="flex flex-col justify-center rounded-3xl border border-surface-border bg-surface-card p-6 shadow-soft sm:p-9">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-accent">TU Sport Day 2026</p>
-            <TourButton tour={tour} />
-          </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-accent">TU Sport Day 2026</p>
           <h1 className="mt-2 max-w-lg text-[26px] font-extrabold leading-tight text-mist-100 sm:text-[32px]">
             สุ่มจับคู่แข่งขันกีฬาสี
           </h1>
@@ -306,7 +278,6 @@ export function HomePage() {
           notify('ล้างข้อมูลทั้งหมดเรียบร้อย', 'success')
         }}
       />
-      <TourOverlay tour={tour} />
     </div>
   )
 }

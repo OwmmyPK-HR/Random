@@ -3,27 +3,12 @@ import { getGroupBySlug } from '../data/events'
 import { EventCard } from '../components/EventCard'
 import { useEventStore } from '../store/EventStoreContext'
 import { groupEventsByCategory } from '../utils/eventGroups'
-import { TourButton, TourOverlay, useTour, type TourStep } from '../components/Tour'
 import { ArrowLeftIcon } from '../components/Icons'
-
-const SPORTGROUP_TOUR_STEPS: TourStep[] = [
-  {
-    target: 'sportgroup-header',
-    title: 'ประเภทกีฬานี้คืออะไร',
-    body: 'ชื่อประเภทกีฬาและจำนวนรายการแข่งขันทั้งหมด พร้อมสถานะว่าจับคู่ไปแล้วกี่รายการ',
-  },
-  {
-    target: 'sportgroup-cards',
-    title: 'รายการแข่งขัน',
-    body: 'แต่ละการ์ดคือ 1 รายการแข่งขัน กดเข้าไปเพื่อกรอกรายชื่อและสุ่มจับคู่แข่งขันของรายการนั้น',
-  },
-]
 
 export function SportGroupPage() {
   const { slug = '' } = useParams()
   const group = getGroupBySlug(slug)
   const { getEvent } = useEventStore()
-  const tour = useTour('sportgroup', SPORTGROUP_TOUR_STEPS)
 
   if (!group) {
     return (
@@ -45,12 +30,9 @@ export function SportGroupPage() {
   return (
     <div className="space-y-5">
       <div>
-        <div className="flex items-center justify-between gap-2">
-          <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
-            <ArrowLeftIcon size={13} /> ประเภทกีฬาทั้งหมด
-          </Link>
-          <TourButton tour={tour} />
-        </div>
+        <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
+          <ArrowLeftIcon size={13} /> ประเภทกีฬาทั้งหมด
+        </Link>
         <div data-tour="sportgroup-header" className="relative mt-2 overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-soft">
           <img src={`./sports/${group.slug}.png`} alt="" className="h-32 w-full object-cover sm:h-40" />
           <div className="absolute inset-0 bg-gradient-to-r from-surface-card via-surface-card/75 to-transparent" />
@@ -83,7 +65,6 @@ export function SportGroupPage() {
           </div>
         ))}
       </div>
-      <TourOverlay tour={tour} />
     </div>
   )
 }

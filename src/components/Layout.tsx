@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { SPORT_GROUPS } from '../data/events'
 import { COLORS } from '../types'
 import { useTheme } from '../store/ThemeContext'
 import { ColorDot } from './ColorBadge'
+import { TourButton, TourOverlay, useTour } from './Tour'
+import { TOUR_STEPS, getPageKeyFromPath } from '../data/tourSteps'
 import { ChartIcon, CloseIcon, DiceIcon, HomeIcon, MenuIcon, MoonIcon, SPORT_ICON, SunIcon } from './Icons'
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
@@ -86,6 +88,9 @@ function Brand() {
 
 export function Layout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const location = useLocation()
+  const pageKey = getPageKeyFromPath(location.pathname)
+  const tour = useTour(pageKey, TOUR_STEPS[pageKey])
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
@@ -118,6 +123,7 @@ export function Layout({ children }: { children: ReactNode }) {
               ))}
             </div>
 
+            <TourButton tour={tour} />
             <ThemeToggle />
 
             <button
@@ -159,6 +165,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <footer className="border-t border-surface-border bg-surface-sunken py-6 text-center text-xs text-mist-600">
         TU Sport Day 2026
       </footer>
+      <TourOverlay tour={tour} />
     </div>
   )
 }
