@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getGroupBySlug } from '../data/events'
 import { EventCard } from '../components/EventCard'
 import { useEventStore } from '../store/EventStoreContext'
+import { groupEventsByCategory } from '../utils/eventGroups'
 import { ArrowLeftIcon } from '../components/Icons'
 
 export function SportGroupPage() {
@@ -24,6 +25,7 @@ export function SportGroupPage() {
     const s = getEvent(ev.code)
     return s.colorBracket || s.unitBracket
   }).length
+  const sections = groupEventsByCategory(group.events)
 
   return (
     <div className="space-y-5">
@@ -46,9 +48,21 @@ export function SportGroupPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {group.events.map((ev) => (
-          <EventCard key={ev.code} ev={ev} state={getEvent(ev.code)} />
+      <div className="space-y-6">
+        {sections.map((section, i) => (
+          <div key={section.heading ?? `single-${i}`}>
+            {section.heading && (
+              <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-mist-400">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                {section.heading}
+              </h2>
+            )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {section.events.map((ev) => (
+                <EventCard key={ev.code} ev={ev} state={getEvent(ev.code)} />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>

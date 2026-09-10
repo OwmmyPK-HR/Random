@@ -11,6 +11,7 @@ const e = (
   entryShape: SportEvent['entryShape'],
   mode: SportEvent['mode'],
   ageLabel?: string,
+  category?: string,
 ): SportEvent => ({
   code,
   sportGroup,
@@ -20,6 +21,7 @@ const e = (
   ageLabel,
   entryShape,
   mode,
+  category,
 })
 
 export function slugify(text: string): string {
@@ -36,17 +38,21 @@ export function slugify(text: string): string {
 }
 
 export const EVENTS: SportEvent[] = [
-  // 1. เทนนิส
-  e('1.1', 'เทนนิส', 'ทีมชายทั่วไป', 'ชาย', 'individual', 'colorTeam'),
-  e('1.2', 'เทนนิส', 'ทีมหญิงทั่วไป', 'หญิง', 'individual', 'colorTeam'),
-  e('1.3', 'เทนนิส', 'ทีมชาย', 'ชาย', 'individual', 'colorTeam', 'อายุ 45 ปีขึ้นไป'),
-  e('1.4', 'เทนนิส', 'ทีมหญิง', 'หญิง', 'individual', 'colorTeam', 'อายุ 45 ปีขึ้นไป'),
-  e('1.5', 'เทนนิส', 'ชายเดี่ยวทั่วไป', 'ชาย', 'individual', 'bracket'),
-  e('1.6', 'เทนนิส', 'หญิงเดี่ยวทั่วไป', 'หญิง', 'individual', 'bracket'),
-  e('1.7', 'เทนนิส', 'ชายเดี่ยว', 'ชาย', 'individual', 'bracket', 'อายุ 45 ปีขึ้นไป'),
-  e('1.8', 'เทนนิส', 'หญิงเดี่ยว', 'หญิง', 'individual', 'bracket', 'อายุ 45 ปีขึ้นไป'),
-  e('1.9', 'เทนนิส', 'ชายคู่ทั่วไป', 'ชาย', 'pair', 'bracket'),
-  e('1.10', 'เทนนิส', 'หญิงคู่ทั่วไป', 'หญิง', 'pair', 'bracket'),
+  // 1. เทนนิส — ประเภทเดี่ยว/คู่ทั่วไปและรุ่นอายุ 45+ จัดกลุ่มรวมไว้ใต้หัวข้อทีมชาย/ทีมหญิงของรุ่นเดียวกัน (ยังจับสลากแยกอิสระตามเดิม)
+  e('1.1', 'เทนนิส', 'ทีมชายทั่วไป', 'ชาย', 'individual', 'colorTeam', undefined, 'ทีมชายทั่วไป'),
+  e('1.5', 'เทนนิส', 'ชายเดี่ยวทั่วไป', 'ชาย', 'individual', 'bracket', undefined, 'ทีมชายทั่วไป'),
+  e('1.9', 'เทนนิส', 'ชายคู่ทั่วไป', 'ชาย', 'pair', 'bracket', undefined, 'ทีมชายทั่วไป'),
+
+  e('1.2', 'เทนนิส', 'ทีมหญิงทั่วไป', 'หญิง', 'individual', 'colorTeam', undefined, 'ทีมหญิงทั่วไป'),
+  e('1.6', 'เทนนิส', 'หญิงเดี่ยวทั่วไป', 'หญิง', 'individual', 'bracket', undefined, 'ทีมหญิงทั่วไป'),
+  e('1.10', 'เทนนิส', 'หญิงคู่ทั่วไป', 'หญิง', 'pair', 'bracket', undefined, 'ทีมหญิงทั่วไป'),
+
+  e('1.3', 'เทนนิส', 'ทีมชาย', 'ชาย', 'individual', 'colorTeam', 'อายุ 45 ปีขึ้นไป', 'ทีมชาย · อายุ 45 ปีขึ้นไป'),
+  e('1.7', 'เทนนิส', 'ชายเดี่ยว', 'ชาย', 'individual', 'bracket', 'อายุ 45 ปีขึ้นไป', 'ทีมชาย · อายุ 45 ปีขึ้นไป'),
+
+  e('1.4', 'เทนนิส', 'ทีมหญิง', 'หญิง', 'individual', 'colorTeam', 'อายุ 45 ปีขึ้นไป', 'ทีมหญิง · อายุ 45 ปีขึ้นไป'),
+  e('1.8', 'เทนนิส', 'หญิงเดี่ยว', 'หญิง', 'individual', 'bracket', 'อายุ 45 ปีขึ้นไป', 'ทีมหญิง · อายุ 45 ปีขึ้นไป'),
+
   e('1.11', 'เทนนิส', 'คู่ผสมทั่วไป', 'ผสม', 'pairMixed', 'bracket'),
 
   // 2. ฟุตบอล
