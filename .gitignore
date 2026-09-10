@@ -6,3 +6,6 @@ dist-ssr
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# โฟลเดอร์ต้นฉบับรูปภาพที่ใส่ไว้ให้ก็อปปี้เข้า public/sports/ แล้ว — ไม่ต้อง commit ซ้ำ (ไฟล์ใหญ่ ซ้ำกับที่ใช้จริง)
+/Image/

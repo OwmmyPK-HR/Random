@@ -171,16 +171,26 @@ export function HomePage() {
               <Link
                 key={g.slug}
                 to={`/sport/${g.slug}`}
-                className="group flex flex-col justify-between rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-card"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-soft transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-card"
               >
                 <div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-accent group-hover:text-accent-contrast dark:bg-surface-raised dark:text-accent">
-                    {Icon && <Icon size={22} />}
+                  <div className="relative h-20 w-full overflow-hidden">
+                    <img
+                      src={`./sports/${g.slug}.png`}
+                      alt=""
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-card via-surface-card/10 to-transparent" />
+                    <div className="absolute bottom-0 left-4 flex h-9 w-9 translate-y-1/2 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
+                      {Icon && <Icon size={18} />}
+                    </div>
                   </div>
-                  <h3 className="mt-3 font-bold text-mist-100 group-hover:text-accent">{g.name}</h3>
-                  <p className="text-xs text-mist-500">{GROUP_BLURB[g.name]}</p>
+                  <div className="px-5 pb-1 pt-6">
+                    <h3 className="font-bold text-mist-100 group-hover:text-accent">{g.name}</h3>
+                    <p className="text-xs text-mist-500">{GROUP_BLURB[g.name]}</p>
+                  </div>
                 </div>
-                <div className="mt-5">
+                <div className="mt-4 px-5 pb-5">
                   <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-mist-400">
                     <span>{g.events.length} รายการ</span>
                     <span className={pct === 100 ? 'text-team-green' : ''}>

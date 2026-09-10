@@ -32,15 +32,19 @@ export function SportGroupPage() {
         <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
           <ArrowLeftIcon size={13} /> ประเภทกีฬาทั้งหมด
         </Link>
-        <div className="mt-2 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
-            {Icon && <Icon size={24} />}
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">{group.name}</h1>
-            <p className="text-sm text-mist-500">
-              {group.events.length} รายการแข่งขัน · จับคู่แล้ว {done}/{group.events.length}
-            </p>
+        <div className="relative mt-2 overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-soft">
+          <img src={`./sports/${group.slug}.png`} alt="" className="h-32 w-full object-cover sm:h-40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-card via-surface-card/75 to-transparent" />
+          <div className="absolute inset-0 flex items-center gap-3 px-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
+              {Icon && <Icon size={24} />}
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">{group.name}</h1>
+              <p className="text-sm text-mist-500">
+                {group.events.length} รายการแข่งขัน · จับคู่แล้ว {done}/{group.events.length}
+              </p>
+            </div>
           </div>
         </div>
       </div>
