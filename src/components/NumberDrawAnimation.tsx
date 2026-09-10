@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { COLORS, type ColorName } from '../types'
 import { usePrefersReducedMotion } from '../utils/useReducedMotion'
-import { D4Die } from './D4Die'
+import { RollingDie3D } from './RollingDie3D'
 import { DiceIcon } from './Icons'
 
 const CYCLE_DURATION_MS = 4500
@@ -19,9 +19,9 @@ function randomDisplay(): Record<ColorName, number> {
 }
 
 /**
- * แอนิเมชันจับฉลากเบอร์ สไตล์ทอยลูกเต๋า D&D — ลูกเต๋า d4 (พอดีกับเบอร์ 1-4) ของทั้ง 4 สีทอยหมุนพร้อมกัน
- * แล้วทยอยหยุดนิ่งทีละสีเรียงตามลำดับ บนพื้นหลังวงเวทมนตร์สไตล์ห้องใต้ดิน (ตั้งใจให้มืดเสมอ ไม่ขึ้นกับโหมดมืด/ขาว
- * เหมือนแผงโปสเตอร์หน้าแรก — เพื่ออารมณ์ทอยเต๋าที่ตัดกับพื้นหลังปกติของหน้า)
+ * แอนิเมชันจับฉลากเบอร์ สไตล์ทอยลูกเต๋า D&D — ลูกเต๋า 3 มิติจริง (กล่อง 6 หน้าหมุนในพื้นที่ 3 มิติ ไม่ใช่ไอคอนแบนที่แค่บิดมุมมอง)
+ * ของทั้ง 4 สีทอยหมุนพร้อมกัน แล้วทยอยหยุดนิ่งทีละสีเรียงตามลำดับ บนพื้นหลังวงเวทมนตร์สไตล์ห้องใต้ดิน
+ * (ตั้งใจให้มืดเสมอ ไม่ขึ้นกับโหมดมืด/ขาว เหมือนแผงโปสเตอร์หน้าแรก — เพื่ออารมณ์ทอยเต๋าที่ตัดกับพื้นหลังปกติของหน้า)
  * (ผลจริงคำนวณไว้ล่วงหน้าแล้วก่อนเรียกคอมโพเนนต์นี้ — แอนิเมชันแค่สร้างความตื่นเต้นก่อนเผยผล)
  */
 export function NumberDrawAnimation({
@@ -115,7 +115,13 @@ export function NumberDrawAnimation({
           return (
             <div key={c} className="flex flex-col items-center gap-2">
               <span className="text-xs font-bold text-white/70">สี{c}</span>
-              <D4Die color={c} value={display[c]} spinning={!isSettled && !reducedMotion} justSettled={isSettled} reducedMotion={reducedMotion} />
+              <RollingDie3D
+                color={c}
+                value={display[c]}
+                spinning={!isSettled}
+                justSettled={isSettled}
+                reducedMotion={reducedMotion}
+              />
             </div>
           )
         })}
