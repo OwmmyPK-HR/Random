@@ -3,7 +3,7 @@ import { COLORS, COLOR_THEME, type ColorName } from '../types'
 import { usePrefersReducedMotion } from '../utils/useReducedMotion'
 import { DiceIcon } from './Icons'
 
-const CYCLE_DURATION_MS = 1500
+const CYCLE_DURATION_MS = 4500
 const SETTLE_HOLD_MS = 550
 
 function randomDisplay(): Record<ColorName, number> {
