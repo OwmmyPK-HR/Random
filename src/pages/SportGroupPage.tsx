@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getGroupBySlug } from '../data/events'
 import { EventCard } from '../components/EventCard'
 import { useEventStore } from '../store/EventStoreContext'
-import { ArrowLeftIcon, SPORT_ICON } from '../components/Icons'
+import { ArrowLeftIcon } from '../components/Icons'
 
 export function SportGroupPage() {
   const { slug = '' } = useParams()
@@ -20,7 +20,6 @@ export function SportGroupPage() {
     )
   }
 
-  const Icon = SPORT_ICON[group.name]
   const done = group.events.filter((ev) => {
     const s = getEvent(ev.code)
     return s.colorBracket || s.unitBracket
@@ -36,9 +35,7 @@ export function SportGroupPage() {
           <img src={`./sports/${group.slug}.png`} alt="" className="h-32 w-full object-cover sm:h-40" />
           <div className="absolute inset-0 bg-gradient-to-r from-surface-card via-surface-card/75 to-transparent" />
           <div className="absolute inset-0 flex items-center gap-3 px-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
-              {Icon && <Icon size={24} />}
-            </div>
+            <img src={`./icons/${group.slug}.png`} alt="" className="h-12 w-12 shrink-0 drop-shadow-md" />
             <div>
               <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">{group.name}</h1>
               <p className="text-sm text-mist-500">

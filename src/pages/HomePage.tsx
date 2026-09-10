@@ -17,7 +17,6 @@ import {
   ChevronRightIcon,
   DiceIcon,
   DownloadIcon,
-  SPORT_ICON,
   TrashIcon,
   TrophyIcon,
   UploadIcon,
@@ -165,7 +164,6 @@ export function HomePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SPORT_GROUPS.map((g) => {
             const done = g.events.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
-            const Icon = SPORT_ICON[g.name]
             const pct = g.events.length ? (done / g.events.length) * 100 : 0
             return (
               <Link
@@ -181,9 +179,7 @@ export function HomePage() {
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-card via-surface-card/10 to-transparent" />
-                    <div className="absolute bottom-0 left-4 flex h-9 w-9 translate-y-1/2 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
-                      {Icon && <Icon size={18} />}
-                    </div>
+                    <img src={`./icons/${g.slug}.png`} alt="" className="absolute bottom-0 left-4 h-9 w-9 translate-y-1/2 drop-shadow-md" />
                   </div>
                   <div className="px-5 pb-1 pt-6">
                     <h3 className="font-bold text-mist-100 group-hover:text-accent">{g.name}</h3>

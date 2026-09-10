@@ -9,3 +9,12 @@ dist-ssr
 
 # โฟลเดอร์ต้นฉบับรูปภาพที่ใส่ไว้ให้ก็อปปี้เข้า public/sports/ แล้ว — ไม่ต้อง commit ซ้ำ (ไฟล์ใหญ่ ซ้ำกับที่ใช้จริง)
 /Image/
+
+# ไอคอนกีฬาต้นฉบับที่ก็อปปี้เข้า public/icons/ แล้ว (Icon/Icon.png ยังคงเก็บไว้ตามเดิม เพราะเป็นต้นฉบับโลโก้ TU)
+/Icon/tennis.png
+/Icon/football.png
+/Icon/futsal.png
+/Icon/volleyball.png
+/Icon/basketball.png
+/Icon/badminton.png
+/Icon/petanque.png
