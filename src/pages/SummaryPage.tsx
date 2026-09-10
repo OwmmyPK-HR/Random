@@ -8,7 +8,31 @@ import { downloadBackupFile, readBackupFile, type RestoreResult } from '../utils
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import { groupRosterByColor } from '../utils/shuffle'
+import { TourButton, TourOverlay, useTour, type TourStep } from '../components/Tour'
 import { CheckCircleIcon, ClockIcon, DownloadIcon, SearchIcon, TrashIcon, UploadIcon } from '../components/Icons'
+
+const SUMMARY_TOUR_STEPS: TourStep[] = [
+  {
+    target: 'summary-export',
+    title: 'ส่งออกสรุปผล',
+    body: 'ส่งออกสรุปผลทุกประเภทกีฬาเป็นไฟล์ Excel เดียว (ชีตสรุป + รายละเอียดแต่ละประเภทที่มีข้อมูลแล้ว)',
+  },
+  {
+    target: 'summary-backup',
+    title: 'สำรอง / กู้คืนข้อมูล',
+    body: 'สำรองข้อมูลทั้งหมด (รายชื่อ ผลจับสลาก ผลแข่งขัน เบอร์ประจำสี) เป็นไฟล์ JSON เก็บไว้ หรือย้ายไปเครื่องอื่นได้',
+  },
+  {
+    target: 'summary-search',
+    title: 'ค้นหา',
+    body: 'พิมพ์ค้นหาประเภทกีฬา/รายการที่ต้องการได้ทันที',
+  },
+  {
+    target: 'summary-table',
+    title: 'ตารางสรุป',
+    body: 'ดูสถานะทุกรายการในที่เดียว จำนวนนักกีฬาแยกตามสี และกดชื่อรายการเพื่อเข้าไปดูรายละเอียดได้เลย',
+  },
+]
 
 export function SummaryPage() {
   const { store, resetAll, replaceStore, numberDraw, replaceNumberDraw } = useEventStore()
@@ -17,6 +41,7 @@ export function SummaryPage() {
   const [pendingRestore, setPendingRestore] = useState<RestoreResult | null>(null)
   const [query, setQuery] = useState('')
   const restoreInputRef = useRef<HTMLInputElement>(null)
+  const tour = useTour('summary', SUMMARY_TOUR_STEPS)
 
   const randomizedTotal = EVENTS.filter((ev) => store[ev.code]?.colorBracket || store[ev.code]?.unitBracket).length
   const colorCounts = Object.fromEntries(
@@ -44,14 +69,18 @@ export function SummaryPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">สรุปผล &amp; ส่งออก</h1>
-          <p className="text-sm text-mist-500">
-            สุ่มจับคู่แล้ว {randomizedTotal}/{EVENTS.length} รายการ
-          </p>
+        <div className="flex items-start gap-2">
+          <div>
+            <h1 className="text-2xl font-extrabold uppercase tracking-wide text-mist-100">สรุปผล &amp; ส่งออก</h1>
+            <p className="text-sm text-mist-500">
+              สุ่มจับคู่แล้ว {randomizedTotal}/{EVENTS.length} รายการ
+            </p>
+          </div>
+          <TourButton tour={tour} />
         </div>
         <div className="flex flex-wrap gap-2">
           <button
+            data-tour="summary-export"
             onClick={async () => {
               const { exportAllResults } = await import('../utils/excel')
               exportAllResults(store)
@@ -69,7 +98,7 @@ export function SummaryPage() {
         </div>
       </div>
 
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
+      <section data-tour="summary-backup" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-surface-border bg-surface-card p-4 shadow-soft">
         <div>
           <p className="text-sm font-bold text-mist-100">สำรอง / กู้คืนข้อมูล</p>
           <p className="text-xs text-mist-500">
@@ -110,7 +139,7 @@ export function SummaryPage() {
         </div>
       </section>
 
-      <div className="relative">
+      <div data-tour="summary-search" className="relative">
         <SearchIcon size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mist-500" />
         <input
           value={query}
@@ -120,7 +149,7 @@ export function SummaryPage() {
         />
       </div>
 
-      <section className="overflow-x-auto rounded-2xl border border-surface-border bg-surface-card shadow-soft">
+      <section data-tour="summary-table" className="overflow-x-auto rounded-2xl border border-surface-border bg-surface-card shadow-soft">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
             <tr className="border-b border-surface-border text-left text-[11px] font-bold uppercase tracking-wide text-mist-600">
@@ -225,6 +254,7 @@ export function SummaryPage() {
           setPendingRestore(null)
         }}
       />
+      <TourOverlay tour={tour} />
     </div>
   )
 }

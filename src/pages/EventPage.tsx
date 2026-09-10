@@ -11,6 +11,7 @@ import { ColorDot } from '../components/ColorBadge'
 import { DrawAnimation } from '../components/DrawAnimation'
 import { entryLabel, groupRosterByColor } from '../utils/shuffle'
 import { COLORS, COLOR_THEME, type ColorName, type RosterEntry } from '../types'
+import { TourButton, TourOverlay, useTour, type TourStep } from '../components/Tour'
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -21,6 +22,24 @@ import {
   TrashIcon,
   TrophyIcon,
 } from '../components/Icons'
+
+const EVENT_TOUR_STEPS: TourStep[] = [
+  {
+    target: 'event-roster',
+    title: 'รายชื่อนักกีฬา',
+    body: 'อัปโหลดไฟล์ Excel หรือกด "พิมพ์รายชื่อเอง" ก็ได้ แยกตามสีให้ถูกต้อง (ถ้าเป็นประเภทแบ่งตามสีทีมข้ามขั้นตอนนี้ได้เลย)',
+  },
+  {
+    target: 'event-draw',
+    title: 'สุ่มจับคู่แข่งขัน',
+    body: 'กดปุ่มนี้เพื่อสุ่มจับคู่แข่งขันรอบแรกอย่างเป็นธรรม ระบบจะมีแอนิเมชันเผยผลให้ดูก่อนแสดงผลจริง',
+  },
+  {
+    target: 'event-result',
+    title: 'ผลการจับสลาก',
+    body: 'ผลลัพธ์จะแสดงที่นี่ — ถ้าเป็นแบบพบกันหมดกรอกผลการแข่งขันจริงได้เลย ระบบจะจัดอันดับและเติมคู่ชิงให้อัตโนมัติ',
+  },
+]
 
 const SHAPE_LABEL: Record<string, string> = {
   individual: 'ชื่อ 1 คน / บรรทัด',
@@ -86,6 +105,7 @@ export function EventPage() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmDeleteEntry, setConfirmDeleteEntry] = useState<{ id: string; label: string } | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const tour = useTour('event', EVENT_TOUR_STEPS)
 
   const state = getEvent(code)
 
@@ -158,7 +178,7 @@ export function EventPage() {
   }
 
   const rosterSection = (
-    <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+    <section data-tour="event-roster" className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="font-bold text-mist-100">
@@ -264,7 +284,7 @@ export function EventPage() {
   )
 
   const drawSection = (
-    <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+    <section data-tour="event-draw" className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
       <button
         onClick={() => (hasBracket ? setConfirmRedraw(true) : doDraw())}
         disabled={!canDraw || isDrawing}
@@ -307,7 +327,7 @@ export function EventPage() {
   )
 
   const resultSection = hasBracket && !isDrawing && (
-    <section className="space-y-4">
+    <section data-tour="event-result" className="space-y-4">
       <h2 className="flex items-center gap-1.5 font-bold text-mist-100">
         <TrophyIcon size={17} className="text-accent" /> ผลการจับสลาก
       </h2>
@@ -330,14 +350,17 @@ export function EventPage() {
             <ArrowLeftIcon size={13} /> {ev.sportGroup}
           </Link>
           <p className="hidden text-xs font-semibold text-mist-500 print:block">{ev.sportGroup}</p>
-          {hasBracket && (
-            <button
-              onClick={() => window.print()}
-              className="no-print inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
-            >
-              <PrinterIcon size={15} /> พิมพ์ผล
-            </button>
-          )}
+          <div className="no-print flex items-center gap-2">
+            <TourButton tour={tour} />
+            {hasBracket && (
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
+              >
+                <PrinterIcon size={15} /> พิมพ์ผล
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="relative mt-2 h-20 overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-soft sm:h-24">
@@ -435,6 +458,7 @@ export function EventPage() {
           setConfirmDeleteEntry(null)
         }}
       />
+      <TourOverlay tour={tour} />
     </div>
   )
 }

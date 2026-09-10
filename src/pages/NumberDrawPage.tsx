@@ -5,8 +5,22 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ColorDot } from '../components/ColorBadge'
 import { NumberDrawAnimation } from '../components/NumberDrawAnimation'
 import { D4Die } from '../components/D4Die'
+import { TourButton, TourOverlay, useTour, type TourStep } from '../components/Tour'
 import { COLORS } from '../types'
 import { DiceIcon, PrinterIcon } from '../components/Icons'
+
+const NUMBERDRAW_TOUR_STEPS: TourStep[] = [
+  {
+    target: 'numberdraw-button',
+    title: 'เริ่มจับฉลาก',
+    body: 'กดปุ่มนี้เพื่อทอยลูกเต๋าสุ่มเบอร์ 1-4 ให้ครบทั้ง 4 สีแบบไม่ซ้ำกัน จะมีแอนิเมชันทอยเต๋าให้ดูก่อนเผยผล',
+  },
+  {
+    target: 'numberdraw-result',
+    title: 'ผลจับฉลาก',
+    body: 'เบอร์ของแต่ละสีจะแสดงที่นี่ กดพิมพ์ผลไปติดประกาศได้ หรือจับฉลากใหม่ถ้าต้องการเปลี่ยน',
+  },
+]
 
 export function NumberDrawPage() {
   const { numberDraw, drawColorNumbers, resetNumberDraw } = useEventStore()
@@ -14,6 +28,7 @@ export function NumberDrawPage() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [confirmRedraw, setConfirmRedraw] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
+  const tour = useTour('numberdraw', NUMBERDRAW_TOUR_STEPS)
 
   const hasDrawn = !!numberDraw.assignment
 
@@ -37,17 +52,20 @@ export function NumberDrawPage() {
             </p>
           </div>
         </div>
-        {hasDrawn && !isDrawing && (
-          <button
-            onClick={() => window.print()}
-            className="no-print inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
-          >
-            <PrinterIcon size={15} /> พิมพ์ผล
-          </button>
-        )}
+        <div className="no-print flex items-center gap-2">
+          <TourButton tour={tour} />
+          {hasDrawn && !isDrawing && (
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
+            >
+              <PrinterIcon size={15} /> พิมพ์ผล
+            </button>
+          )}
+        </div>
       </div>
 
-      <section className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
+      <section data-tour="numberdraw-button" className="no-print rounded-2xl border border-surface-border bg-surface-card p-5 shadow-soft">
         <button
           onClick={() => (hasDrawn ? setConfirmRedraw(true) : doDraw())}
           disabled={isDrawing}
@@ -68,7 +86,7 @@ export function NumberDrawPage() {
       )}
 
       {hasDrawn && !isDrawing && (
-        <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <section data-tour="numberdraw-result" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {COLORS.map((c) => {
             const n = numberDraw.assignment![c]
             return (
@@ -126,6 +144,7 @@ export function NumberDrawPage() {
           notify('ล้างผลจับฉลากเบอร์เรียบร้อย', 'success')
         }}
       />
+      <TourOverlay tour={tour} />
     </div>
   )
 }

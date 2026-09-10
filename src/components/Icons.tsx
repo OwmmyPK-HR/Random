@@ -195,6 +195,14 @@ export const InfoIcon = (p: IconProps) => (
   </Base>
 )
 
+export const HelpIcon = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.4c-.8.5-1.2 1-1.2 1.9v.3" />
+    <path d="M12 16.7v.1" />
+  </Base>
+)
+
 // ---- ไอคอนหมวดกีฬา (เส้นเรียบง่าย โทนเดียวกับไอคอนหลัก) ----
 
 export const SportTennisIcon = (p: IconProps) => (
