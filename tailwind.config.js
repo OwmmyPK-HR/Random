@@ -111,6 +111,20 @@ export default {
           '50%': { transform: 'translate(-2%, 2%)' },
           '100%': { transform: 'translate(0,0)' },
         },
+        wobble: {
+          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+          '25%': { transform: 'translateY(-7px) rotate(-9deg)' },
+          '75%': { transform: 'translateY(-2px) rotate(9deg)' },
+        },
+        settlePop: {
+          '0%': { transform: 'scale(0.65)', opacity: 0 },
+          '55%': { transform: 'scale(1.18)', opacity: 1 },
+          '100%': { transform: 'scale(1)' },
+        },
+        ringBurst: {
+          '0%': { transform: 'scale(0.5)', opacity: 0.9 },
+          '100%': { transform: 'scale(2.1)', opacity: 0 },
+        },
       },
       animation: {
         popIn: 'popIn 0.4s cubic-bezier(0.16,1,0.3,1) both',
@@ -119,6 +133,9 @@ export default {
         tumble: 'tumble 0.7s cubic-bezier(0.65,0,0.35,1) infinite',
         pulseGlow: 'pulseGlow 2.2s ease-in-out infinite',
         drift: 'drift 12s ease-in-out infinite',
+        wobble: 'wobble 0.5s ease-in-out infinite',
+        settlePop: 'settlePop 0.6s cubic-bezier(0.34,1.56,0.64,1) both',
+        ringBurst: 'ringBurst 0.75s ease-out both',
       },
     },
   },

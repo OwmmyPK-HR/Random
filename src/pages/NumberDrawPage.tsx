@@ -81,7 +81,10 @@ export function NumberDrawPage() {
                 </span>
                 <span
                   className="flex h-16 w-16 items-center justify-center rounded-full text-3xl font-extrabold text-white [font-variant-numeric:tabular-nums]"
-                  style={{ background: `linear-gradient(135deg, ${theme.soft}, ${theme.base})`, boxShadow: `0 0 20px ${theme.base}55` }}
+                  style={{
+                    background: `radial-gradient(circle at 32% 26%, #ffffff, ${theme.soft} 24%, ${theme.base} 62%, ${theme.base} 100%)`,
+                    boxShadow: `inset -3px -4px 8px rgba(0,0,0,.22), inset 2px 3px 5px rgba(255,255,255,.6), 0 8px 20px ${theme.base}55`,
+                  }}
                 >
                   {n}
                 </span>
