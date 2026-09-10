@@ -4,7 +4,8 @@ import { useToast } from '../store/ToastContext'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ColorDot } from '../components/ColorBadge'
 import { NumberDrawAnimation } from '../components/NumberDrawAnimation'
-import { COLORS, COLOR_THEME } from '../types'
+import { D4Die } from '../components/D4Die'
+import { COLORS } from '../types'
 import { DiceIcon, PrinterIcon } from '../components/Icons'
 
 export function NumberDrawPage() {
@@ -69,7 +70,6 @@ export function NumberDrawPage() {
       {hasDrawn && !isDrawing && (
         <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {COLORS.map((c) => {
-            const theme = COLOR_THEME[c]
             const n = numberDraw.assignment![c]
             return (
               <div
@@ -79,15 +79,7 @@ export function NumberDrawPage() {
                 <span className="inline-flex items-center gap-1.5 text-sm font-bold text-mist-300">
                   <ColorDot color={c} size={10} /> สี{c}
                 </span>
-                <span
-                  className="flex h-16 w-16 items-center justify-center rounded-full text-3xl font-extrabold text-white [font-variant-numeric:tabular-nums]"
-                  style={{
-                    background: `radial-gradient(circle at 32% 26%, #ffffff, ${theme.soft} 24%, ${theme.base} 62%, ${theme.base} 100%)`,
-                    boxShadow: `inset -3px -4px 8px rgba(0,0,0,.22), inset 2px 3px 5px rgba(255,255,255,.6), 0 8px 20px ${theme.base}55`,
-                  }}
-                >
-                  {n}
-                </span>
+                <D4Die color={c} value={n} />
                 <span className="text-xs font-semibold text-mist-500">เบอร์ {n}</span>
               </div>
             )

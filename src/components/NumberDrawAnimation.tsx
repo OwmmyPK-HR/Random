@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { COLORS, COLOR_THEME, type ColorName } from '../types'
+import { COLORS, type ColorName } from '../types'
 import { usePrefersReducedMotion } from '../utils/useReducedMotion'
+import { D4Die } from './D4Die'
 import { DiceIcon } from './Icons'
 
 const CYCLE_DURATION_MS = 4500
@@ -18,7 +19,9 @@ function randomDisplay(): Record<ColorName, number> {
 }
 
 /**
- * แอนิเมชันจับฉลากเบอร์ — ลูกแก้วมันวาว 4 สีหมุนตัวเลข 1-4 พร้อมกัน แล้วทยอยหยุดทีละสีเรียงตามลำดับ
+ * แอนิเมชันจับฉลากเบอร์ สไตล์ทอยลูกเต๋า D&D — ลูกเต๋า d4 (พอดีกับเบอร์ 1-4) ของทั้ง 4 สีทอยหมุนพร้อมกัน
+ * แล้วทยอยหยุดนิ่งทีละสีเรียงตามลำดับ บนพื้นหลังวงเวทมนตร์สไตล์ห้องใต้ดิน (ตั้งใจให้มืดเสมอ ไม่ขึ้นกับโหมดมืด/ขาว
+ * เหมือนแผงโปสเตอร์หน้าแรก — เพื่ออารมณ์ทอยเต๋าที่ตัดกับพื้นหลังปกติของหน้า)
  * (ผลจริงคำนวณไว้ล่วงหน้าแล้วก่อนเรียกคอมโพเนนต์นี้ — แอนิเมชันแค่สร้างความตื่นเต้นก่อนเผยผล)
  */
 export function NumberDrawAnimation({
@@ -91,40 +94,28 @@ export function NumberDrawAnimation({
   }, [reducedMotion])
 
   return (
-    <section className="flex flex-col items-center gap-6 rounded-2xl border border-dashed border-accent/30 bg-accent/5 px-6 py-12">
-      <span className="eyebrow inline-flex items-center gap-1.5 bg-accent px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-accent-contrast">
+    <section className="relative flex flex-col items-center gap-7 overflow-hidden rounded-3xl border-2 border-gold-500/40 bg-gradient-to-b from-[#2b1810] via-[#1c1108] to-[#0e0906] px-6 py-14 shadow-pop">
+      {/* วงเวทมนตร์หมุนรอบ ๆ พื้นหลัง — ล้วนตกแต่งอย่างเดียว ไม่ขวางการมองเห็น */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 animate-[spin_22s_linear_infinite] rounded-full border border-gold-400/20" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[56%] w-[56%] -translate-x-1/2 -translate-y-1/2 animate-[spin_16s_linear_infinite_reverse] rounded-full border border-dashed border-gold-400/25" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/10 blur-2xl" />
+      {/* ประกายไฟลอย ๆ มุมการ์ด */}
+      <span className="animate-floaty pointer-events-none absolute left-[12%] top-[18%] h-1.5 w-1.5 rounded-full bg-gold-300 shadow-[0_0_10px_3px] shadow-gold-300/60" />
+      <span className="animate-floaty pointer-events-none absolute right-[15%] top-[28%] h-1 w-1 rounded-full bg-gold-300 shadow-[0_0_8px_2px] shadow-gold-300/60 [animation-delay:1s]" />
+      <span className="animate-floaty pointer-events-none absolute bottom-[20%] left-[20%] h-1 w-1 rounded-full bg-gold-300 shadow-[0_0_8px_2px] shadow-gold-300/60 [animation-delay:2s]" />
+
+      <span className="eyebrow relative inline-flex items-center gap-1.5 bg-gold-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-[#2b1810]">
         <DiceIcon size={12} className={allSettled || reducedMotion ? '' : 'animate-tumble'} />
-        {allSettled ? 'จับฉลากเบอร์เรียบร้อย!' : 'กำลังจับฉลากเบอร์...'}
+        {allSettled ? '🎲 จับฉลากเบอร์เรียบร้อย!' : 'กำลังทอยลูกเต๋าจับฉลากเบอร์...'}
       </span>
 
-      <div className="grid w-full max-w-lg grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="relative grid w-full max-w-lg grid-cols-2 gap-5 sm:grid-cols-4">
         {COLORS.map((c, i) => {
-          const theme = COLOR_THEME[c]
           const isSettled = i < settledCount
           return (
-            <div key={c} className="flex flex-col items-center gap-2.5">
-              <span className="text-xs font-bold text-mist-300">สี{c}</span>
-              <div className="relative flex h-[4.5rem] w-[4.5rem] items-center justify-center">
-                {isSettled && !reducedMotion && (
-                  <span
-                    className="animate-ringBurst pointer-events-none absolute inset-0 rounded-full"
-                    style={{ boxShadow: `0 0 0 3px ${theme.base}` }}
-                  />
-                )}
-                <div
-                  className={`relative flex h-16 w-16 items-center justify-center rounded-full text-2xl font-extrabold text-white [font-variant-numeric:tabular-nums] ${
-                    isSettled ? (reducedMotion ? '' : 'animate-settlePop') : 'animate-wobble'
-                  }`}
-                  style={{
-                    background: `radial-gradient(circle at 32% 26%, #ffffff, ${theme.soft} 24%, ${theme.base} 62%, ${theme.base} 100%)`,
-                    boxShadow: isSettled
-                      ? `inset -3px -4px 8px rgba(0,0,0,.22), inset 2px 3px 5px rgba(255,255,255,.6), 0 8px 20px ${theme.base}55`
-                      : `0 0 18px ${theme.base}55`,
-                  }}
-                >
-                  {display[c]}
-                </div>
-              </div>
+            <div key={c} className="flex flex-col items-center gap-2">
+              <span className="text-xs font-bold text-white/70">สี{c}</span>
+              <D4Die color={c} value={display[c]} spinning={!isSettled && !reducedMotion} justSettled={isSettled} reducedMotion={reducedMotion} />
             </div>
           )
         })}
