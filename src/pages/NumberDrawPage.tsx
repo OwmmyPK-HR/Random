@@ -24,12 +24,17 @@ export function NumberDrawPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-mist-100">จับฉลากเบอร์ประจำสี</h1>
-          <p className="hidden text-xs font-semibold text-mist-500 print:block">จับฉลากเบอร์ประจำสี</p>
-          <p className="no-print text-sm text-mist-500">
-            สุ่มเบอร์ 1-4 ให้แต่ละสี ใช้สำหรับลำดับเดินขบวน พิธีเปิด หรือกิจกรรมอื่นที่ต้องใช้เบอร์ประจำสี (ไม่เกี่ยวกับการจับคู่แข่งขันของแต่ละประเภทกีฬา)
-          </p>
+        <div className="flex items-start gap-3">
+          <div className="no-print flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-contrast shadow-glowAccent">
+            <DiceIcon size={20} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-mist-100">จับฉลากเบอร์ประจำสี</h1>
+            <p className="hidden text-xs font-semibold text-mist-500 print:block">จับฉลากเบอร์ประจำสี</p>
+            <p className="no-print text-sm text-mist-500">
+              สุ่มเบอร์ 1-4 ให้แต่ละสี ใช้สำหรับลำดับเดินขบวน พิธีเปิด หรือกิจกรรมอื่นที่ต้องใช้เบอร์ประจำสี (ไม่เกี่ยวกับการจับคู่แข่งขันของแต่ละประเภทกีฬา)
+            </p>
+          </div>
         </div>
         {hasDrawn && !isDrawing && (
           <button

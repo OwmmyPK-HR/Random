@@ -48,10 +48,65 @@ describe('เทนนิส category grouping', () => {
     expect(standalone.events.map((ev) => ev.code)).toEqual(['1.11'])
   })
 
-  it('does not accidentally assign a category to any non-tennis event', () => {
-    const nonTennis = EVENTS.filter((ev) => ev.sportGroup !== 'เทนนิส')
-    for (const ev of nonTennis) {
+  it('does not leak a category onto events from other sports', () => {
+    const others = EVENTS.filter((ev) => !['เทนนิส', 'แบดมินตัน', 'เปตอง'].includes(ev.sportGroup))
+    for (const ev of others) {
       expect(ev.category).toBeUndefined()
     }
+  })
+})
+
+describe('แบดมินตัน category grouping', () => {
+  const badminton = getGroupBySlug('badminton')!
+
+  it('still has all 9 seed-1 badminton events, untouched by the regrouping', () => {
+    expect(badminton.events).toHaveLength(9)
+  })
+
+  it('groups ชายคู่/หญิงคู่/คู่ผสม of the same age bracket under one heading', () => {
+    const byCode = Object.fromEntries(badminton.events.map((ev) => [ev.code, ev]))
+    expect(byCode['6.1'].category).toBe('รุ่นอายุ 20 ปีขึ้นไป')
+    expect(byCode['6.2'].category).toBe('รุ่นอายุ 20 ปีขึ้นไป')
+    expect(byCode['6.7'].category).toBe('รุ่นอายุ 20 ปีขึ้นไป')
+    expect(byCode['6.3'].category).toBe('รุ่นอายุ 40 ปีขึ้นไป')
+    expect(byCode['6.5'].category).toBe('รุ่นอายุ 50 ปีขึ้นไป')
+  })
+
+  it('produces exactly 3 headed sections, 3 events each', () => {
+    const sections = groupEventsByCategory(badminton.events)
+    expect(sections).toHaveLength(3)
+    expect(sections.every((s) => s.heading && s.events.length === 3)).toBe(true)
+    expect(sections.map((s) => s.heading)).toEqual(['รุ่นอายุ 20 ปีขึ้นไป', 'รุ่นอายุ 40 ปีขึ้นไป', 'รุ่นอายุ 50 ปีขึ้นไป'])
+  })
+})
+
+describe('เปตอง category grouping', () => {
+  const petanque = getGroupBySlug('petanque')!
+
+  it('still has all 7 seed-1 petanque events, untouched by the regrouping', () => {
+    expect(petanque.events).toHaveLength(7)
+  })
+
+  it('groups เดี่ยว/คู่/ทีม 3 คน of the same gender under one heading', () => {
+    const byCode = Object.fromEntries(petanque.events.map((ev) => [ev.code, ev]))
+    expect(byCode['7.1'].category).toBe('ประเภทชาย')
+    expect(byCode['7.3'].category).toBe('ประเภทชาย')
+    expect(byCode['7.6'].category).toBe('ประเภทชาย')
+    expect(byCode['7.2'].category).toBe('ประเภทหญิง')
+    expect(byCode['7.4'].category).toBe('ประเภทหญิง')
+    expect(byCode['7.7'].category).toBe('ประเภทหญิง')
+  })
+
+  it('leaves คู่ผสมทั่วไป uncategorized (no matching gender group to fold into)', () => {
+    const mixed = petanque.events.find((ev) => ev.code === '7.5')!
+    expect(mixed.category).toBeUndefined()
+  })
+
+  it('produces exactly 3 sections: ประเภทชาย, ประเภทหญิง, and standalone คู่ผสม', () => {
+    const sections = groupEventsByCategory(petanque.events)
+    expect(sections).toHaveLength(3)
+    expect(sections.filter((s) => s.heading).map((s) => s.heading)).toEqual(['ประเภทชาย', 'ประเภทหญิง'])
+    const standalone = sections.find((s) => !s.heading)!
+    expect(standalone.events.map((ev) => ev.code)).toEqual(['7.5'])
   })
 })

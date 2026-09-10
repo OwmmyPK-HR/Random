@@ -318,28 +318,36 @@ export function EventPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to={`/sport/${ev.groupSlug}`} className="no-print inline-flex items-center gap-1 text-xs font-semibold text-mist-500 hover:text-accent">
             <ArrowLeftIcon size={13} /> {ev.sportGroup}
           </Link>
           <p className="hidden text-xs font-semibold text-mist-500 print:block">{ev.sportGroup}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-extrabold text-mist-100">{ev.name}</h1>
-            <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-mist-400">{headline}</span>
-            {isColorTeam && (
-              <span className="rounded-full bg-team-blue/15 px-2.5 py-0.5 text-xs font-semibold text-team-blue-soft">แบ่งตามสีทีม</span>
-            )}
+          {hasBracket && (
+            <button
+              onClick={() => window.print()}
+              className="no-print inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
+            >
+              <PrinterIcon size={15} /> พิมพ์ผล
+            </button>
+          )}
+        </div>
+
+        <div className="relative mt-2 h-20 overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-soft sm:h-24">
+          <img src={`./sports/${ev.groupSlug}.png`} alt="" className="no-print absolute inset-0 h-full w-full object-cover" />
+          <div className="no-print absolute inset-0 bg-gradient-to-r from-surface-card via-surface-card/80 to-transparent" />
+          <div className="absolute inset-0 flex items-center gap-3 px-5 py-3">
+            <img src={`./icons/${ev.groupSlug}.png`} alt="" className="no-print h-10 w-10 shrink-0 drop-shadow-md" />
+            <div className="min-w-0 flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-extrabold text-mist-100 sm:text-2xl">{ev.name}</h1>
+              <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-mist-400">{headline}</span>
+              {isColorTeam && (
+                <span className="rounded-full bg-team-blue/15 px-2.5 py-0.5 text-xs font-semibold text-team-blue-soft">แบ่งตามสีทีม</span>
+              )}
+            </div>
           </div>
         </div>
-        {hasBracket && (
-          <button
-            onClick={() => window.print()}
-            className="no-print inline-flex items-center gap-1.5 rounded-xl border border-surface-borderLight bg-surface-card px-3.5 py-2 text-sm font-semibold text-mist-200 hover:bg-surface-raised"
-          >
-            <PrinterIcon size={15} /> พิมพ์ผล
-          </button>
-        )}
       </div>
 
       {/* STEP TRACKER */}

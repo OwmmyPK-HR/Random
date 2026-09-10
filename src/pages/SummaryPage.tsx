@@ -153,7 +153,10 @@ export function SummaryPage() {
                   <tr key={ev.code} className="hover:bg-surface-raised/60">
                     {idx === 0 && (
                       <td className="px-4 py-2.5 align-top font-semibold text-mist-300" rowSpan={g.events.length}>
-                        {g.name}
+                        <span className="inline-flex items-center gap-1.5">
+                          <img src={`./icons/${g.slug}.png`} alt="" className="h-4 w-4 shrink-0" />
+                          {g.name}
+                        </span>
                       </td>
                     )}
                     <td className="px-4 py-2.5">
