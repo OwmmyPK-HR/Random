@@ -10,6 +10,7 @@ import { getLastBackupAt } from '../utils/storage'
 import { ColorDistributionBar } from '../components/ColorDistributionBar'
 import { TeamColorCards } from '../components/TeamColorCards'
 import { ShowcasePanel } from '../components/ShowcasePanel'
+import { DiceTeaser } from '../components/DiceTeaser'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import {
   ChartIcon,
@@ -159,6 +160,9 @@ export function HomePage() {
 
       {/* TEAM COLOR CARDS */}
       <TeamColorCards />
+
+      {/* DICE TEASER */}
+      <DiceTeaser />
 
       {/* STATS */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
