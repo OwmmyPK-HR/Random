@@ -81,6 +81,33 @@ export function TourButton({ tour, className = '' }: { tour: TourController; cla
 const TOOLTIP_WIDTH = 300
 const MARGIN = 14
 const SPOTLIGHT_PAD = 8
+// ความสูงโดยประมาณขั้นต่ำที่กล่องคำอธิบายต้องใช้ — ใช้ตัดสินใจว่าพอมีที่ว่างเหนือ/ใต้จุดไฮไลต์ให้วางไหม
+const TOOLTIP_MIN_SPACE = 190
+
+export interface TooltipPosition {
+  top?: number
+  bottom?: number
+  transform?: string
+}
+
+/**
+ * หาตำแหน่งวางกล่องคำอธิบาย (เหนือ/ใต้จุดไฮไลต์ หรือลอยกลางจอถ้าไม่มีที่ว่างพอ) โดย "หนีบ" ขอบของจุดไฮไลต์ไว้ในจอก่อนคำนวณเสมอ
+ * — จุดไฮไลต์บางจุด (เช่นกริดการ์ดทั้งบล็อก) อาจสูงเกินจอ ทำให้ rect.top ติดลบ หรือ rect.bottom เลยขอบจอไปได้
+ * ถ้าใช้ค่าดิบตรง ๆ กล่องคำอธิบายจะคำนวณตำแหน่งหลุดออกนอกจอไปทั้งกล่องโดยไม่รู้ตัว
+ */
+export function computeTooltipPosition(rect: { top: number; bottom: number }, viewportHeight: number): TooltipPosition {
+  // หนีบทั้งขอบบนและล่างไว้ในช่วง [0, viewportHeight] เสมอ (ไม่ใช่แค่ขอบเดียว) กันกรณีเป้าหมายยังไม่ได้เลื่อนเข้าจอเลย
+  // (เช่น rect.top เป็นค่าบวกมาก ๆ) ไม่งั้น "พื้นที่ว่าง" ที่คำนวณได้จะเพี้ยนจนตำแหน่งกล่องคำอธิบายหลุดจอไปได้เหมือนกัน
+  const visibleTop = Math.min(Math.max(rect.top, 0), viewportHeight)
+  const visibleBottom = Math.min(Math.max(rect.bottom, 0), viewportHeight)
+  const spaceBelow = viewportHeight - visibleBottom
+  const spaceAbove = visibleTop
+
+  if (spaceBelow >= TOOLTIP_MIN_SPACE) return { top: visibleBottom + MARGIN }
+  if (spaceAbove >= TOOLTIP_MIN_SPACE) return { bottom: viewportHeight - visibleTop + MARGIN }
+  // จุดไฮไลต์ใหญ่จนเต็มจอ ไม่มีที่ว่างพอทั้งบนและล่าง — ลอยกล่องคำอธิบายไว้กลางจอแทน ยังมองเห็นแน่นอนไม่ว่าจุดจะใหญ่แค่ไหน
+  return { top: viewportHeight / 2, transform: 'translateY(-50%)' }
+}
 
 /** ตัวสปอตไลท์ + กล่องคำอธิบาย — เรนเดอร์ไว้ครั้งเดียวนอกสุดของหน้า (ไม่ต้องกังวลเรื่อง z-index ซ้อนกับเนื้อหาอื่น) */
 export function TourOverlay({ tour }: { tour: TourController }) {
@@ -128,7 +155,7 @@ export function TourOverlay({ tour }: { tour: TourController }) {
   const width = rect.width + SPOTLIGHT_PAD * 2
   const height = rect.height + SPOTLIGHT_PAD * 2
 
-  const placeAbove = rect.top + rect.height / 2 > window.innerHeight / 2
+  const tooltipPosition = computeTooltipPosition(rect, window.innerHeight)
   const tooltipLeft = Math.min(Math.max(rect.left + rect.width / 2 - TOOLTIP_WIDTH / 2, MARGIN), window.innerWidth - TOOLTIP_WIDTH - MARGIN)
 
   return (
@@ -148,7 +175,7 @@ export function TourOverlay({ tour }: { tour: TourController }) {
         style={{
           width: TOOLTIP_WIDTH,
           left: tooltipLeft,
-          ...(placeAbove ? { bottom: window.innerHeight - rect.top + MARGIN } : { top: rect.bottom + MARGIN }),
+          ...tooltipPosition,
         }}
       >
         <div className="mb-2 flex items-center justify-between">
